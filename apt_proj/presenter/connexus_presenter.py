@@ -1,4 +1,4 @@
-!/usr/bin/env python
+#!/usr/bin/env python
 
 # [START imports]
 import os
@@ -12,7 +12,7 @@ from google.appengine.ext import ndb
 import jinja2
 import webapp2
 
-from ../models/connexus_models import *
+from models.connexus_models import *
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),

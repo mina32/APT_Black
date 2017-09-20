@@ -12,7 +12,7 @@ handlers:
   static_dir: static/bootstrap
 
 - url: /.*
-  script: ./presenter/connexus_presenter.app
+  script: presenter.connexus_presenter.app
 # [END handlers]
 
 # [START libraries]
