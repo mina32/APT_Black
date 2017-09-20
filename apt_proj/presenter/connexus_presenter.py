@@ -15,7 +15,7 @@ import webapp2
 from models.connexus_models import *
 
 JINJA_ENVIRONMENT = jinja2.Environment(
-    loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
+    loader=jinja2.FileSystemLoader(os.path.dirname('templates')),
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 # [END imports]
@@ -28,21 +28,22 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 class CreatePage(webapp2.RequestHandler):
     
     def get(self):
-	pprint("HEREEEEEE")
         user = users.get_current_user()
         submit_url = "/manage" 
 
         template_values = {
             'user': user,
-            'stream_name_label': Stream.stream_name.verbose_name,
-            'subscriber_label': Stream.subscribers.verbose_name,
-            'tag_label': Stream.tags.verbose_name,
+	    'page_title': "connexus",
+	    'page_header': "Connex.us",
+            'stream_name_label': Stream.stream_name._verbose_name,
+            'subscriber_label': Stream.subscribers._verbose_name,
+            'tag_label': Stream.tags._verbose_name,
             'submit_label': "Create Stream",
-            'cover_image_label': Stream.cover_image.verbose_name,
+            'cover_image_label': Stream.cover_image._verbose_name,
             'url': submit_url,
         }
 
-        template = JINJA_ENVIRONMENT.get_template('create_stream.html')
+        template = JINJA_ENVIRONMENT.get_template('templates/create_stream.html')
         self.response.write(template.render(template_values))
 
     def post(self):
@@ -86,7 +87,6 @@ class CreatePage(webapp2.RequestHandler):
 
 # [START app]
 # TODO: uncomment as pages get developed
-print("I'm here?!?>!?!?!?!")
 app = webapp2.WSGIApplication([
     ('/', CreatePage),
     ('/create', CreatePage),
