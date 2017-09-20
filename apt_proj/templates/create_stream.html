@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>{{ page_title }}</title>
+</head>
+<body>
+    <h1>{{ page_header }}</h1>
+    <ul id="navigation">
+    {% for item in navigation %}
+        <li><a href="{{ item.href }}">{{ item.caption }}</a></li>
+    {% endfor %}
+    </ul>
+    
+    <div class="container">
+        <form>
+            <div class="row">
+                <div class="col">
+                    {# text input name #}
+                    <input name="stream_name" type="text" required />
+                    {{ stream_name_label }}
+                    <br>
+                    {# email input subscribers #}
+                    <input name="subscribers" type="email" multiple />
+                    <input name="subscribers_msg" type="text" />
+                    {{ subscriber_label }}
+                </div>
+                <div class="col">
+                    {# text input tag #}
+                    <input name="tags" type="text" />
+                    {{ tag_label }}
+                    <br>
+                    {# url input cover_image #}
+                    <input name="cover_image" type="url" />
+                    {{ cover_image_label }}
+                </div>
+            </div>
+            <button type="submit">
+                {{ submit_label }}
+            <button>
+        </form>
+    </div>
+</body>
+</html>
+
