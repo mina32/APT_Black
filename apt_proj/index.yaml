@@ -2,8 +2,6 @@ indexes:
 
 - kind: Stream
   properties:
-  - name: owner
-    direction: asc
   - name: stream_name
     direction: asc
   - name: subscribers

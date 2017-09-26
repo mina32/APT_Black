@@ -31,13 +31,13 @@ def stream_key(guestbook_name=DEFAULT_STREAM_NAME):
 
 
 class Person(ndb.Model):
-    identity = ndb.StringProperty(indexed=False)
-    email = ndb.StringProperty(indexed=False)
+    identity = ndb.StringProperty()
+    email = ndb.StringProperty()
 
 # [START Media]
 class Media(ndb.Model):
     #TODO: make this a filetype
-    content = ndb.StringProperty(indexed=False)
+    content = ndb.StringProperty()
     date_uploaded = ndb.DateTimeProperty(auto_now_add=True)
 # [END Media]
 

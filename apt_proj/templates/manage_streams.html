@@ -23,7 +23,9 @@
                 <th>Delete</th>
             {% for stream in owned_streams %}
                 <tr>
-                    <td>{{ stream }}</td>
+                    <td>{{ stream.stream_name }}</td>
+                    <td>{{ stream.owner.email}}</td>
+                    <td>{{ user.email() }}</td>
                     <td>STUB: media query</td>
                     <td>STUB: media.count</td>
                     <td><input id="del_"+{stream.stream_name} type="checkbox" /></td>

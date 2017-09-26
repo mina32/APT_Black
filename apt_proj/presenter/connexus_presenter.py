@@ -25,24 +25,28 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 class ManagePage(webapp2.RequestHandler):
     
     def get(self):
-        user = users.get_current_user()
+        current_user = users.get_current_user()
 
-        #FIXME: query for owned streams
         owned_query = Stream.query(
             Stream.owner == Person(
-                identity=user.user_id(),                
-                email=user.email()
+                identity=current_user.user_id(),                
+                email=current_user.email()
             )
-            #Stream.tags == 'tagYoureIt'
         )
         owned_streams = owned_query.fetch()
 
         #TODO: query for subscribed streams
-        subscribed_streams = []
+        subscribed_query = Stream.query(
+            Stream.subscribers == Person(
+                identity=current_user.user_id(),                
+                email=current_user.email()
+            )
+        )
+        subscribed_streams = subscribed_query.fetch()
 
 
         template_values = {
-            'user': user,
+            'user': current_user,
 	    'page_title': "connexus",
 	    'page_header': "Connex.us",
             'subscribed_streams': subscribed_streams,
@@ -57,11 +61,11 @@ class ManagePage(webapp2.RequestHandler):
 class CreatePage(webapp2.RequestHandler):
     
     def get(self):
-        user = users.get_current_user()
+        current_user = users.get_current_user()
         submit_url = "/manage" 
 
         template_values = {
-            'user': user,
+            'user': current_user,
 	    'page_title': "connexus",
 	    'page_header': "Connex.us",
             'stream_name_label': Stream.stream_name._verbose_name,
@@ -81,10 +85,12 @@ class CreatePage(webapp2.RequestHandler):
 class CreatePost(webapp2.RequestHandler):
 
     def post(self):
-        user = users.get_current_user()
+        current_user = users.get_current_user()
+        u_id = current_user.user_id()
+        u_email = current_user.email()
         owner = Person(
-                identity=user.user_id(),
-                email=user.email()
+                identity=u_id,
+                email=u_email
         )
         # Process subscribers
         subscriber_emails = self.request.get('subscribers')
@@ -95,7 +101,7 @@ class CreatePost(webapp2.RequestHandler):
         raw_tags = self.request.get('tags')
         tags = raw_tags.replace(' ','').split(r',')
         s = Stream(
-                stream_name=self.request.get('name'),
+                stream_name=self.request.get('stream_name'),
                 owner=owner,
                 cover_image=self.request.get('cover_image'),
                 subscribers=subscribers,
