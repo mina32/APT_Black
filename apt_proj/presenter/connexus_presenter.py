@@ -3,11 +3,13 @@
 # [START imports]
 import os
 import urllib
+import logging
 
 from pprint import pprint
 
 from google.appengine.api import users
 from google.appengine.ext import ndb
+from google.appengine.ext.db import Key
 
 import jinja2
 import webapp2
@@ -44,7 +46,6 @@ class ManagePage(webapp2.RequestHandler):
         )
         owned_streams = owned_query.fetch()
 
-        #TODO: query for subscribed streams
         subscribed_query = Stream.query(
             Stream.subscribers == Person(
                 identity=current_user.user_id(),                
@@ -67,6 +68,18 @@ class ManagePage(webapp2.RequestHandler):
         self.response.write(template.render(template_values))
 # [END ManagePage]
 
+# [START DeleteStream]
+class DeleteStream(webapp2.RequestHandler):
+    
+    def post(self):
+        list_of_key_strings = self.request.get_all("del")
+        logging.info(list_of_key_strings)
+        #TODO: figure out how to get keys from ID :(
+        list_of_keys = []
+        ndb.delete_multi(list_of_keys)
+        self.redirect('/manage')
+# [END DeleteStream]
+
 # [START CreatePage]
 class CreatePage(webapp2.RequestHandler):
     
@@ -75,6 +88,7 @@ class CreatePage(webapp2.RequestHandler):
         submit_url = "/manage" 
 
         template_values = {
+            'navigation': NAV_LINKS,
             'user': current_user,
 	    'page_title': "connexus",
 	    'page_header': "Connex.us",
@@ -146,6 +160,7 @@ app = webapp2.WSGIApplication([
     ('/create', CreatePage),
     ('/create_post', CreatePost),
     ('/manage', ManagePage),
+    ('/delete_stream', DeleteStream),
     #('/view/<>',ViewSinglePage),
     #('/view',ViewAllPage),
     #('/trending',TrendingPage),

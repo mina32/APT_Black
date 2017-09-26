@@ -2,6 +2,7 @@
 
 {% block content %}
     <h2>Streams I own</h2>
+    <form action="/delete_stream" method="post">
     <table class="table table-borders">
         <tr>
             <th>Name</th>
@@ -13,13 +14,14 @@
                 <td>{{ stream.stream_name }}</td>
                 <td>{{ stream.date_last_updated }}</td>
                 <td>{{ stream.media_item_count }}</td>
-                <td><input id="del_"+{stream.stream_name} type="checkbox" /></td>
+                <td><input name="del" value="{{ stream.key.id() }}" type="checkbox" /></td>
             </tr>
         {% endfor %}
     </table>
-    <button type="button" action="STUB_url" method="post">
+    <button type="submit">
         Delete Checked Streams
     </button>
+    </form>
     
     <br>
     <br>
@@ -38,11 +40,11 @@
                 <td>{{ stream.date_last_updated }}</td>
                 <td>{{ stream.media_item_count }}</td>
                 <td>{{ stream.views }}</td>
-                <td><input id="unsub_"+{stream.stream_name} type="checkbox" /></td>
+                <td><input name="unsubscribe" id={stream.key} type="checkbox" /></td>
             </tr>
         {% endfor %}
     </table>
-    <button type="button" action="STUB_url" method="post">
+    <button type="button" action="/STUB_url" method="post">
         Unsubscribe Checked Streams
     </button>
 {% endblock %}

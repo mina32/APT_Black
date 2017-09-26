@@ -36,7 +36,7 @@ class Person(ndb.Model):
 
 # [START Media]
 class Media(ndb.Model):
-    #TODO: make this a filetype
+    #TODO: make this a filetype?
     content = ndb.StringProperty()
     date_uploaded = ndb.DateTimeProperty(auto_now_add=True)
 # [END Media]
