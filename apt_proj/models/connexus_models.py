@@ -47,6 +47,7 @@ class Stream(ndb.Model):
     stream_name = ndb.StringProperty(required=True, verbose_name="Name your stream") 
     owner = ndb.StructuredProperty(Person)
     media_items = ndb.StructuredProperty(Media, repeated=True)
+    media_item_count = ndb.ComputedProperty(lambda x: len(x.media_items))
     cover_image = ndb.StringProperty(verbose_name="URL to cover image (Can be empty)")
     subscribers = ndb.StructuredProperty(Person, repeated=True, verbose_name="Add subscribers")
     tags = ndb.StringProperty(repeated=True, verbose_name="Tag your stream")

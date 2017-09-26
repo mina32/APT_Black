@@ -1,63 +1,50 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <link type="text/css" rel="stylesheet" href="/bootstrap/css/bootstrap.css">
-    <link type="text/css" rel="stylesheet" href="/bootstrap/css/bootstrap-responsive.css">
-    <title>{{ page_title }}</title>
-</head>
-<body>
-    <h1>{{ page_header }}</h1>
-    <ul id="navigation">
-    {% for item in navigation %}
-        <li><a href="{{ item.href }}">{{ item.caption }}</a></li>
-    {% endfor %}
-    </ul>
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Streams I own</h2>
+    <table class="table table-borders">
+        <tr>
+            <th>Name</th>
+            <th>Last New Picture</th>
+            <th>Number of Pictures</th>
+            <th>Delete</th>
+        {% for stream in owned_streams %}
+            <tr>
+                <td>{{ stream.stream_name }}</td>
+                <td>{{ stream.date_last_updated }}</td>
+                <td>{{ stream.media_item_count }}</td>
+                <td><input id="del_"+{stream.stream_name} type="checkbox" /></td>
+            </tr>
+        {% endfor %}
+    </table>
+    <button type="button" action="STUB_url" method="post">
+        Delete Checked Streams
+    </button>
     
-    <div class="container">
-        <h2>Streams I own</h2>
-        <table>
+    <br>
+    <br>
+
+    <h2>Streams I subscribe to</h2>
+    <table class="table table-borders">
+        <tr>
+            <th>Name</th>
+            <th>Last New Picture</th>
+            <th>Number of Pictures</th>
+            <th>Views</th>
+            <th>Unsubscribe</th>
+        {% for stream in subscribed_streams %}
             <tr>
-                <th>Name</th>
-                <th>Last New Picture</th>
-                <th>Number of Pictures</th>
-                <th>Delete</th>
-            {% for stream in owned_streams %}
-                <tr>
-                    <td>{{ stream.stream_name }}</td>
-                    <td>{{ stream.owner.email}}</td>
-                    <td>{{ user.email() }}</td>
-                    <td>STUB: media query</td>
-                    <td>STUB: media.count</td>
-                    <td><input id="del_"+{stream.stream_name} type="checkbox" /></td>
-                </tr>
-            {% endfor %}
-        </table>
-        <button type="button" action="STUB_url" method="post">
-            Delete Checked Streams
-        </button>
-        
-        <h2>Streams I subscribe to</h2>
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Last New Picture</th>
-                <th>Number of Pictures</th>
-                <th>Views</th>
-                <th>Unsubscribe</th>
-            {% for stream in subscribed_streams %}
-                <tr>
-                    <td>{{ stream.stream_name }}</td>
-                    <td>STUB: media query</td>
-                    <td>STUB: media.count</td>
-                    <td>{{ stream.views }}</td>
-                    <td><input id="unsub_"+{stream.stream_name} type="checkbox" /></td>
-                </tr>
-            {% endfor %}
-        </table>
-        <button type="button" action="STUB_url" method="post">
-            Unsubscribe Checked Streams
-        </button>
-    </div>
-</body>
-</html>
+                <td>{{ stream.stream_name }}</td>
+                <td>{{ stream.date_last_updated }}</td>
+                <td>{{ stream.media_item_count }}</td>
+                <td>{{ stream.views }}</td>
+                <td><input id="unsub_"+{stream.stream_name} type="checkbox" /></td>
+            </tr>
+        {% endfor %}
+    </table>
+    <button type="button" action="STUB_url" method="post">
+        Unsubscribe Checked Streams
+    </button>
+{% endblock %}
+
 

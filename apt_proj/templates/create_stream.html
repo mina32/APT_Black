@@ -1,47 +1,32 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <link type="text/css" rel="stylesheet" href="/bootstrap/css/bootstrap.css">
-    <link type="text/css" rel="stylesheet" href="/bootstrap/css/bootstrap-responsive.css">
-    <title>{{ page_title }}</title>
-</head>
-<body>
-    <h1>{{ page_header }}</h1>
-    <ul id="navigation">
-    {% for item in navigation %}
-        <li><a href="{{ item.href }}">{{ item.caption }}</a></li>
-    {% endfor %}
-    </ul>
-    
-    <div class="container">
-        <form action="/create_post" method="post">
-            <div class="row">
-                <div class="col-6">
-                    <input name="stream_name" type="text" required />
-                    <br>
-                    {{ stream_name_label }}
-                    <br>
-                    <input name="subscribers" type="email" multiple />
-                    <br>
-                    <input name="subscribers_msg" type="text" />
-                    <br>
-                    {{ subscriber_label }}
-                </div>
-                <div class="col-6">
-                    <input name="tags" type="text" />
-                    <br>
-                    {{ tag_label }}
-                    <br>
-                    <input name="cover_image" type="url" />
-                    <br>
-                    {{ cover_image_label }}
-                </div>
+{% extends "base.html" %}
+
+{% block content %}
+    <form action="/create_post" method="post">
+        <div class="row">
+            <div class="col-6">
+                <input name="stream_name" type="text" required />
+                <br>
+                {{ stream_name_label }}
+                <br>
+                <input name="subscribers" type="email" multiple />
+                <br>
+                <input name="subscribers_msg" type="text" />
+                <br>
+                {{ subscriber_label }}
             </div>
-            <button type="submit">
-                {{ submit_label }}
-            </button>
-        </form>
-    </div>
-</body>
-</html>
+            <div class="col-6">
+                <input name="tags" type="text" />
+                <br>
+                {{ tag_label }}
+                <br>
+                <input name="cover_image" type="url" />
+                <br>
+                {{ cover_image_label }}
+            </div>
+        </div>
+        <button type="submit">
+            {{ submit_label }}
+        </button>
+    </form>
+{% endblock %}
 

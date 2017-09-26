@@ -15,10 +15,19 @@ import webapp2
 from models.connexus_models import *
 
 JINJA_ENVIRONMENT = jinja2.Environment(
-    loader=jinja2.FileSystemLoader(os.path.dirname('templates')),
+    loader=jinja2.FileSystemLoader('templates'),
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 # [END imports]
+
+NAV_LINKS = [
+    {"label": "Manage", "link": "/manage"},
+    {"label": "Create", "link": "/create"},
+    {"label": "View", "link": "/view"},
+    {"label": "Search", "link": "/search"},
+    {"label": "Trending", "link": "/trending"},
+    {"label": "Social", "link": "/social"},
+]
 
 
 # [START ManagePage]
@@ -46,6 +55,7 @@ class ManagePage(webapp2.RequestHandler):
 
 
         template_values = {
+            'navigation': NAV_LINKS,
             'user': current_user,
 	    'page_title': "connexus",
 	    'page_header': "Connex.us",
@@ -53,7 +63,7 @@ class ManagePage(webapp2.RequestHandler):
             'owned_streams': owned_streams,
         }
 
-        template = JINJA_ENVIRONMENT.get_template('templates/manage_streams.html')
+        template = JINJA_ENVIRONMENT.get_template('manage_streams.html')
         self.response.write(template.render(template_values))
 # [END ManagePage]
 
@@ -76,7 +86,7 @@ class CreatePage(webapp2.RequestHandler):
             'url': submit_url,
         }
 
-        template = JINJA_ENVIRONMENT.get_template('templates/create_stream.html')
+        template = JINJA_ENVIRONMENT.get_template('create_stream.html')
         self.response.write(template.render(template_values))
 # [END CreatePage]
 
