@@ -14,25 +14,26 @@
     </ul>
     
     <div class="container">
-        <form>
+        <form action="/create_post" method="post">
             <div class="row">
-                <div class="col">
-                    {# text input name #}
+                <div class="col-6">
                     <input name="stream_name" type="text" required />
+                    <br>
                     {{ stream_name_label }}
                     <br>
-                    {# email input subscribers #}
                     <input name="subscribers" type="email" multiple />
+                    <br>
                     <input name="subscribers_msg" type="text" />
+                    <br>
                     {{ subscriber_label }}
                 </div>
-                <div class="col">
-                    {# text input tag #}
+                <div class="col-6">
                     <input name="tags" type="text" />
+                    <br>
                     {{ tag_label }}
                     <br>
-                    {# url input cover_image #}
                     <input name="cover_image" type="url" />
+                    <br>
                     {{ cover_image_label }}
                 </div>
             </div>

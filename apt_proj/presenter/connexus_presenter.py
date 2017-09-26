@@ -22,6 +22,35 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 
 
 # [START ManagePage]
+class ManagePage(webapp2.RequestHandler):
+    
+    def get(self):
+        user = users.get_current_user()
+
+        #FIXME: query for owned streams
+        owned_query = Stream.query(
+            Stream.owner == Person(
+                identity=user.user_id(),                
+                email=user.email()
+            )
+            #Stream.tags == 'tagYoureIt'
+        )
+        owned_streams = owned_query.fetch()
+
+        #TODO: query for subscribed streams
+        subscribed_streams = []
+
+
+        template_values = {
+            'user': user,
+	    'page_title': "connexus",
+	    'page_header': "Connex.us",
+            'subscribed_streams': subscribed_streams,
+            'owned_streams': owned_streams,
+        }
+
+        template = JINJA_ENVIRONMENT.get_template('templates/manage_streams.html')
+        self.response.write(template.render(template_values))
 # [END ManagePage]
 
 # [START CreatePage]
@@ -45,9 +74,18 @@ class CreatePage(webapp2.RequestHandler):
 
         template = JINJA_ENVIRONMENT.get_template('templates/create_stream.html')
         self.response.write(template.render(template_values))
+# [END CreatePage]
+
+
+# [START CreatePost]
+class CreatePost(webapp2.RequestHandler):
 
     def post(self):
-        pprint(self.request.data)
+        user = users.get_current_user()
+        owner = Person(
+                identity=user.user_id(),
+                email=user.email()
+        )
         # Process subscribers
         subscriber_emails = self.request.get('subscribers')
         #TODO: handle email & user mapping 
@@ -58,15 +96,15 @@ class CreatePage(webapp2.RequestHandler):
         tags = raw_tags.replace(' ','').split(r',')
         s = Stream(
                 stream_name=self.request.get('name'),
-                owner=user,
+                owner=owner,
                 cover_image=self.request.get('cover_image'),
                 subscribers=subscribers,
                 tags=tags,
                 views=0,
         )
-        s.post()
+        s.put()
         self.redirect('/manage')
-# [END CreatePage]
+# [END CreatePost]
 
 # [START ViewSinglePage]
 # [END ViewSinglePage]
@@ -90,7 +128,8 @@ class CreatePage(webapp2.RequestHandler):
 app = webapp2.WSGIApplication([
     ('/', CreatePage),
     ('/create', CreatePage),
-    #('/manage', ManagePage),
+    ('/create_post', CreatePost),
+    ('/manage', ManagePage),
     #('/view/<>',ViewSinglePage),
     #('/view',ViewAllPage),
     #('/trending',TrendingPage),

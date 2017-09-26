@@ -10,6 +10,8 @@ from google.appengine.ext import ndb
 import jinja2
 import webapp2
 
+from pprint import pprint
+
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     extensions=['jinja2.ext.autoescape'],
@@ -41,7 +43,7 @@ class Media(ndb.Model):
 
 
 # [START Stream]
-class Stream(webapp2.RequestHandler):
+class Stream(ndb.Model):
     stream_name = ndb.StringProperty(required=True, verbose_name="Name your stream") 
     owner = ndb.StructuredProperty(Person)
     media_items = ndb.StructuredProperty(Media, repeated=True)
@@ -52,23 +54,6 @@ class Stream(webapp2.RequestHandler):
     date_created = ndb.DateTimeProperty(auto_now_add=True)
     date_last_updated = ndb.DateTimeProperty(auto_now=True)
 
-    
-    # TODO: Does this belong in presenter? 
-    #       Probs not because it applies to ALL Streams
-    def post(self):
-        stream_name = self.request.get('stream_name', DEFAULT_STREAM_NAME)
-        media_items = Media(parent=stream_key(stream_name))
-
-        if users.get_current_user():
-            stream.owner = Owner(
-                    identity=users.get_current_user().user_id(),
-                    email=users.get_current_user().email())
-
-        #greeting.content = self.request.get('content')
-        #greeting.put()
-
-        #query_params = {'stream_name': stream_name}
-        #self.redirect('/?' + urllib.urlencode(query_params))
 # [END Stream]
 
 
