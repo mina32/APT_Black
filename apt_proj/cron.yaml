@@ -1,0 +1,4 @@
+cron:
+- description: update trending report
+  url: /trending
+  schedule: every 5 minutes

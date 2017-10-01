@@ -8,6 +8,7 @@ import logging
 from pprint import pprint
 
 from google.appengine.api import users
+from google.appengine.ext import blobstore
 from google.appengine.ext import ndb
 from google.appengine.ext.db import Key
 
@@ -30,8 +31,7 @@ NAV_LINKS = [
     {"label": "Trending", "link": "/trending"},
     {"label": "Social", "link": "/social"},
 ]
-
-
+        
 # [START ManagePage]
 class ManagePage(webapp2.RequestHandler):
     
@@ -146,9 +146,29 @@ class CreatePost(webapp2.RequestHandler):
 # [END SearchPage]
 
 # [START TrendingPage]
+class TrendingPage(webapp2.RequestHandler):
+    #in progress... need to get images/stream
+    def get(self):
+        current_user = users.get_current_user()
+        trend_streams = Stream.query().order(Stream.views).fetch(3)
+        template_values = {
+            'navigation': NAV_LINKS,
+            'user': current_user,
+	    'page_title': "connexus",
+	    'page_header': "Connex.us",
+            'top_streams':trend_streams
+        }
+        template = JINJA_ENVIRONMENT.get_template('trending_stream.html')
+        self.response.write(template.render(template_values))
+        
 # [END TrendingPage]
 
 # [START ErrorPage]
+class ErrorPage(webapp2.RequestHandler):
+
+    def get(self):
+        template = JINJA_ENVIRONMENT.get_template('error.html')
+        self.response.write(template.render())
 # [END ErrorPage]
 
 
@@ -163,7 +183,7 @@ app = webapp2.WSGIApplication([
     ('/delete_stream', DeleteStream),
     #('/view/<>',ViewSinglePage),
     #('/view',ViewAllPage),
-    #('/trending',TrendingPage),
-    #('/error',ErrorPage),
+    ('/trending',TrendingPage),
+    ('/error',ErrorPage),
 ], debug=True)
 # [END app]
