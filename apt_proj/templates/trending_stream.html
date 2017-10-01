@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+<br/>
+<h2>Top 3 Trending Streams</h2>
+<div class="row">
+    {% for stream in streams %}
+    <div class="col-md-3">
+        <div class="thumbnail">
+            <a href="/view?stream_name={{ stream.name }}&increment=1">
+                <img src="{{ stream.cover_image }}" class="img-responsive">
+            </a>
+            <div class="caption">
+                <a href="/view?stream_name={{ stream.name }}&increment=1">
+                    <h3 class="text-center">{{ stream.name }}</h3>
+                    <h4 class="text-center">{{ stream.recent_views | length }} in past hour</h4>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    <div class="col-md-3">
+        <form action="/trending" method="post">
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" name="none"
+                    {% if email_mode == "none" %}checked="True"{% endif %} >
+                    No reports
+                </label>
+            </div>
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" name="minutes"
+                    {% if email_mode == "minutes" %}checked="True"{% endif %} >
+                    Every 5 minutes
+                </label>
+            </div>
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" name="hourly"
+                    {% if email_mode == "hourly" %}checked="True"{% endif %} >
+                    Every 1 hour
+                </label>
+            </div>
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" name="daily"
+                    {% if email_mode == "daily" %}checked="True"{% endif %} >
+                    Every day
+                </label>
+            </div>
+            Email Trending Report
+            <button type="submit" class="btn btn-default">Update rate</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
