@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+    
+    {% for item in media_items %}
+        <img class="media-inline" src={item.attachment} />
+    {% endfor %}
+    <div class="file-imput-box">
+        <form action="/post_media" method="post">
+            <input
+            <button type="submit">
+                Upload File
+            </button>
+        </form>
+    </div>
+
+    <form action="/sub_stream" method="post">
+        <button type="submit" method="post">
+            Subscribe
+        </button>
+    </form>
+{% endblock %}
+
+

@@ -27,6 +27,7 @@
     <br>
 
     <h2>Streams I subscribe to</h2>
+    <form action="/unsub_stream" method="post">
     <table class="table table-borders">
         <tr>
             <th>Name</th>
@@ -44,9 +45,10 @@
             </tr>
         {% endfor %}
     </table>
-    <button type="button" action="/STUB_url" method="post">
+    <button type="submit"method="post">
         Unsubscribe Checked Streams
     </button>
+    </form>
 {% endblock %}
 
 

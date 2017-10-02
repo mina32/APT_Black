@@ -4,6 +4,7 @@
 import os
 import urllib
 import logging
+import time
 
 from pprint import pprint
 
@@ -73,12 +74,36 @@ class DeleteStream(webapp2.RequestHandler):
     
     def post(self):
         list_of_key_strings = self.request.get_all("del")
-        logging.info(list_of_key_strings)
-        #TODO: figure out how to get keys from ID :(
-        list_of_keys = []
-        ndb.delete_multi(list_of_keys)
+        #logging.info([ndb.Key(Stream, k) for k in list_of_key_strings])
+        ndb.delete_multi([ndb.Key(Stream, int(k)) for k in list_of_key_strings])
+        #XXX: We should not hard-code sleep time
+        time.sleep(1)
         self.redirect('/manage')
 # [END DeleteStream]
+
+
+# [START UnsubscribeStream]
+class UnsubscribeStream(webapp2.RequestHandler):
+    
+    def post(self):
+        list_of_key_strings = self.request.get_all("unsubscribe")
+        list_of_entities = ndb.get_multi([ndb.Key(Stream, k) for k in list_of_key_strings])
+        current_user = users.get_current_user()
+
+        curentUser = Person(
+            identity=current_user.user_id(),                
+            email=current_user.email()
+        )
+        logging.info(list_of_entities)
+        for e in list_of_entities:
+            e.subscribers.remove(currentUser)
+        logging.info(list_of_entities)
+        ndb.put_multi([ndb.Key(Stream, int(k)) for k in list_of_entities])
+        #XXX: We should not hard-code sleep time
+        time.sleep(1)
+        self.redirect('/manage')
+# [END UnsubscribeStream]
+
 
 # [START CreatePage]
 class CreatePage(webapp2.RequestHandler):
@@ -181,7 +206,7 @@ app = webapp2.WSGIApplication([
     ('/create_post', CreatePost),
     ('/manage', ManagePage),
     ('/delete_stream', DeleteStream),
-    #('/view/<>',ViewSinglePage),
+    #('/view/<stream_id:\d+>',ViewSinglePage),
     #('/view',ViewAllPage),
     ('/trending',TrendingPage),
     ('/error',ErrorPage),
