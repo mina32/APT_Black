@@ -3,17 +3,17 @@
 {% block content %}
     
     {% for item in media_items %}
-        <img class="media-inline" src={item.attachment} />
+        <img class="media-inline" src={item.content}> 
     {% endfor %}
-    <div class="file-imput-box">
-        <form action="/post_media" method="post">
-            <input
-            <button type="submit">
-                Upload File
-            </button>
+    <br>
+    <div class="file-input-box">
+        <form action="/post_media/{{ stream_key }}" method="POST" enctype="multipart/form-data">
+            Upload File: <input type="file" name="file"><br>
+            <input type="submit" name="submit" value="Submit">
         </form>
     </div>
-
+    <br>
+    <br>
     <form action="/sub_stream" method="post">
         <button type="submit" method="post">
             Subscribe

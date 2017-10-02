@@ -6,6 +6,8 @@ import urllib
 
 from google.appengine.api import users
 from google.appengine.ext import ndb
+from google.appengine.ext import blobstore 
+from google.appengine.api import images 
 
 import jinja2
 import webapp2
@@ -36,8 +38,8 @@ class Person(ndb.Model):
 
 # [START Media]
 class Media(ndb.Model):
-    #TODO: make this a filetype?
-    content = ndb.StringProperty()
+    content = ndb.BlobKeyProperty()
+    uploaded_by = ndb.StructuredProperty(Person)
     date_uploaded = ndb.DateTimeProperty(auto_now_add=True)
 # [END Media]
 

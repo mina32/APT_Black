@@ -12,6 +12,8 @@ from google.appengine.api import users
 from google.appengine.ext import blobstore
 from google.appengine.ext import ndb
 from google.appengine.ext.db import Key
+from google.appengine.api import images
+from google.appengine.ext.webapp import blobstore_handlers
 
 import jinja2
 import webapp2
@@ -162,7 +164,58 @@ class CreatePost(webapp2.RequestHandler):
 # [END CreatePost]
 
 # [START ViewSinglePage]
+class ViewSinglePage(webapp2.RequestHandler):
+    
+    def get(self, stream_key_str):
+        current_user = users.get_current_user()
+        stream_key = ndb.Key(urlsafe=stream_key_str)
+        stream_obj = stream_key.get()
+        media_items = stream_obj.media_items
+
+        template_values = {
+            'navigation': NAV_LINKS,
+            'user': current_user,
+	    'page_title': "connexus",
+	    'page_header': "Connex.us",
+            'stream_key': stream_key_str,
+            'stream_obj': stream_obj,
+            'media_items': media_items,
+        }
+
+        template = JINJA_ENVIRONMENT.get_template('view_single_stream.html')
+        self.response.write(template.render(template_values))
 # [END ViewSinglePage]
+
+import cgi
+
+# [START PostMedia]
+class PostMedia(blobstore_handlers.BlobstoreUploadHandler):
+
+    def post(self, stream_key_str):
+        current_user = users.get_current_user()
+        current_user = Person(
+                identity = current_user.user_id(),
+                email = current_user.email()
+        )
+        try:
+            # TODO: Brice replace this with your backend. 
+            #       This Does not work
+            upload = self.get_uploads()[0]
+            logging.info(upload)
+            user_photo = Media(
+                uploaded_by = current_user,
+                content = upload.key())
+            user_photo.put()
+            stream_key = ndb.Key(urlsafe=stream_key_str)
+            stream_obj = stream_key.get()
+            stream_obj.media_items.append(user_photo)
+            stream_obj.put()
+
+            self.redirect('/view/%s' % stream_key_str)
+
+        #except:
+        #    self.error(500)
+# [END PostMedia]
 
 # [START ViewAllPage]
 # [END ViewAllPage]
@@ -206,7 +259,8 @@ app = webapp2.WSGIApplication([
     ('/create_post', CreatePost),
     ('/manage', ManagePage),
     ('/delete_stream', DeleteStream),
-    #('/view/<stream_id:\d+>',ViewSinglePage),
+    ('/view/(.+)',ViewSinglePage),
+    ('/post_media/(.+)', PostMedia),
     #('/view',ViewAllPage),
     ('/trending',TrendingPage),
     ('/error',ErrorPage),
