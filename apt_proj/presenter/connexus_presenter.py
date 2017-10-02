@@ -170,6 +170,8 @@ class ViewSinglePage(webapp2.RequestHandler):
         current_user = users.get_current_user()
         stream_key = ndb.Key(urlsafe=stream_key_str)
         stream_obj = stream_key.get()
+        stream_obj.views = stream_obj.views + 1
+        stream_obj.put()
         media_items = stream_obj.media_items
 
         template_values = {
@@ -213,8 +215,8 @@ class PostMedia(blobstore_handlers.BlobstoreUploadHandler):
 
             self.redirect('/view/%s' % stream_key_str)
 
-        #except:
-        #    self.error(500)
+        except:
+            self.error(500)
 # [END PostMedia]
 
 # [START ViewAllPage]
