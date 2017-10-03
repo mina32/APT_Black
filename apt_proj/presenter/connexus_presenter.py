@@ -4,14 +4,19 @@
 import os
 import urllib
 import logging
+import time
 
 import jinja2
 import webapp2
 
 try:
+    from pprint import pprint
     from google.appengine.api import users
     from google.appengine.ext import ndb
     from google.appengine.ext.db import Key
+    from google.appengine.ext import blobstore
+    from google.appengine.api import images
+    from google.appengine.ext.webapp import blobstore_handlers
     from models.connexus_models import *
     from models.image_store import ImageStorage
 except ImportError:
@@ -31,7 +36,6 @@ NAV_LINKS = [
     {"label": "Trending", "link": "/trending"},
     {"label": "Social", "link": "/social"},
 ]
-
 
 # [START ManagePage]
 class ManagePage(webapp2.RequestHandler):
@@ -74,12 +78,36 @@ class DeleteStream(webapp2.RequestHandler):
     
     def post(self):
         list_of_key_strings = self.request.get_all("del")
-        logging.info(list_of_key_strings)
-        #TODO: figure out how to get keys from ID :(
-        list_of_keys = []
-        ndb.delete_multi(list_of_keys)
+        #logging.info([ndb.Key(Stream, k) for k in list_of_key_strings])
+        ndb.delete_multi([ndb.Key(Stream, int(k)) for k in list_of_key_strings])
+        #XXX: We should not hard-code sleep time
+        time.sleep(1)
         self.redirect('/manage')
 # [END DeleteStream]
+
+
+# [START UnsubscribeStream]
+class UnsubscribeStream(webapp2.RequestHandler):
+    
+    def post(self):
+        list_of_key_strings = self.request.get_all("unsubscribe")
+        list_of_entities = ndb.get_multi([ndb.Key(Stream, k) for k in list_of_key_strings])
+        current_user = users.get_current_user()
+
+        curentUser = Person(
+            identity=current_user.user_id(),                
+            email=current_user.email()
+        )
+        logging.info(list_of_entities)
+        for e in list_of_entities:
+            e.subscribers.remove(currentUser)
+        logging.info(list_of_entities)
+        ndb.put_multi([ndb.Key(Stream, int(k)) for k in list_of_entities])
+        #XXX: We should not hard-code sleep time
+        time.sleep(1)
+        self.redirect('/manage')
+# [END UnsubscribeStream]
+
 
 # [START CreatePage]
 class CreatePage(webapp2.RequestHandler):
@@ -138,7 +166,60 @@ class CreatePost(webapp2.RequestHandler):
 # [END CreatePost]
 
 # [START ViewSinglePage]
+class ViewSinglePage(webapp2.RequestHandler):
+    
+    def get(self, stream_key_str):
+        current_user = users.get_current_user()
+        stream_key = ndb.Key(urlsafe=stream_key_str)
+        stream_obj = stream_key.get()
+        stream_obj.views = stream_obj.views + 1
+        stream_obj.put()
+        media_items = stream_obj.media_items
+
+        template_values = {
+            'navigation': NAV_LINKS,
+            'user': current_user,
+	    'page_title': "connexus",
+	    'page_header': "Connex.us",
+            'stream_key': stream_key_str,
+            'stream_obj': stream_obj,
+            'media_items': media_items,
+        }
+
+        template = JINJA_ENVIRONMENT.get_template('view_single_stream.html')
+        self.response.write(template.render(template_values))
 # [END ViewSinglePage]
+
+import cgi
+
+# [START PostMedia]
+class PostMedia(blobstore_handlers.BlobstoreUploadHandler):
+
+    def post(self, stream_key_str):
+        current_user = users.get_current_user()
+        current_user = Person(
+                identity = current_user.user_id(),
+                email = current_user.email()
+        )
+        try:
+            # TODO: Brice replace this with your backend. 
+            #       This Does not work
+            upload = self.get_uploads()[0]
+            logging.info(upload)
+            user_photo = Media(
+                uploaded_by = current_user,
+                content = upload.key())
+            user_photo.put()
+            stream_key = ndb.Key(urlsafe=stream_key_str)
+            stream_obj = stream_key.get()
+            stream_obj.media_items.append(user_photo)
+            stream_obj.put()
+
+            self.redirect('/view/%s' % stream_key_str)
+
+        except:
+            self.error(500)
+# [END PostMedia]
 
 # [START ViewAllPage]
 # [END ViewAllPage]
@@ -147,9 +228,29 @@ class CreatePost(webapp2.RequestHandler):
 # [END SearchPage]
 
 # [START TrendingPage]
+class TrendingPage(webapp2.RequestHandler):
+    #in progress... need to get images/stream
+    def get(self):
+        current_user = users.get_current_user()
+        trend_streams = Stream.query().order(Stream.views).fetch(3)
+        template_values = {
+            'navigation': NAV_LINKS,
+            'user': current_user,
+	    'page_title': "connexus",
+	    'page_header': "Connex.us",
+            'top_streams':trend_streams
+        }
+        template = JINJA_ENVIRONMENT.get_template('trending_stream.html')
+        self.response.write(template.render(template_values))
+        
 # [END TrendingPage]
 
 # [START ErrorPage]
+class ErrorPage(webapp2.RequestHandler):
+
+    def get(self):
+        template = JINJA_ENVIRONMENT.get_template('error.html')
+        self.response.write(template.render())
 # [END ErrorPage]
 
 
@@ -162,9 +263,10 @@ app = webapp2.WSGIApplication([
     ('/create_post', CreatePost),
     ('/manage', ManagePage),
     ('/delete_stream', DeleteStream),
-    #('/view/<>',ViewSinglePage),
+    ('/view/(.+)',ViewSinglePage),
+    ('/post_media/(.+)', PostMedia),
     #('/view',ViewAllPage),
-    #('/trending',TrendingPage),
-    #('/error',ErrorPage),
+    ('/trending',TrendingPage),
+    ('/error',ErrorPage),
 ], debug=True)
 # [END app]

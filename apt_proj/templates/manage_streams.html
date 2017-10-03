@@ -11,7 +11,7 @@
             <th>Delete</th>
         {% for stream in owned_streams %}
             <tr>
-                <td>{{ stream.stream_name }}</td>
+                <td><a href="/view/{{ stream.key.urlsafe() }}">{{ stream.stream_name }}</a></td>
                 <td>{{ stream.date_last_updated }}</td>
                 <td>{{ stream.media_item_count }}</td>
                 <td><input name="del" value="{{ stream.key.id() }}" type="checkbox" /></td>
@@ -27,6 +27,7 @@
     <br>
 
     <h2>Streams I subscribe to</h2>
+    <form action="/unsub_stream" method="post">
     <table class="table table-borders">
         <tr>
             <th>Name</th>
@@ -44,9 +45,10 @@
             </tr>
         {% endfor %}
     </table>
-    <button type="button" action="/STUB_url" method="post">
+    <button type="submit"method="post">
         Unsubscribe Checked Streams
     </button>
+    </form>
 {% endblock %}
 
 
