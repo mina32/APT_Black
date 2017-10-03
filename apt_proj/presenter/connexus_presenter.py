@@ -18,7 +18,7 @@ try:
     from google.appengine.api import images
     from google.appengine.ext.webapp import blobstore_handlers
     from models.connexus_models import *
-    from models.image_store import ImageStorage
+    from models.image_store import ImageStore
 except ImportError:
     raise("Import Error")
 
@@ -37,11 +37,25 @@ NAV_LINKS = [
     {"label": "Social", "link": "/social"},
 ]
 
+def check_auth(uri):
+    """
+        Checks if the current user is authenticated
+        Returns the current user, the url and the url_link_text
+    """
+    current_user = users.get_current_user()
+    if current_user:
+        auth_url = users.create_logout_url(uri)
+        url_link_text = 'Logout'
+    else:
+        auth_url = users.create_login_url(uri)
+        url_link_text = 'Login'
+    return current_user, auth_url, url_link_text
+
 # [START ManagePage]
 class ManagePage(webapp2.RequestHandler):
     
     def get(self):
-        current_user = users.get_current_user()
+        current_user, auth_url, url_link_text = check_auth(self.request.uri)
 
         owned_query = Stream.query(
             Stream.owner == Person(
@@ -63,10 +77,12 @@ class ManagePage(webapp2.RequestHandler):
         template_values = {
             'navigation': NAV_LINKS,
             'user': current_user,
-	    'page_title': "connexus",
-	    'page_header': "Connex.us",
+	        'page_title': "connexus",
+	        'page_header': "Connex.us",
             'subscribed_streams': subscribed_streams,
             'owned_streams': owned_streams,
+            'auth_url': auth_url,
+            'url_link_text': url_link_text,
         }
 
         template = JINJA_ENVIRONMENT.get_template('manage_streams.html')
@@ -77,6 +93,7 @@ class ManagePage(webapp2.RequestHandler):
 class DeleteStream(webapp2.RequestHandler):
     
     def post(self):
+        current_user, auth_url, url_link_text = check_auth(self.request.uri)
         list_of_key_strings = self.request.get_all("del")
         #logging.info([ndb.Key(Stream, k) for k in list_of_key_strings])
         ndb.delete_multi([ndb.Key(Stream, int(k)) for k in list_of_key_strings])
@@ -92,7 +109,7 @@ class UnsubscribeStream(webapp2.RequestHandler):
     def post(self):
         list_of_key_strings = self.request.get_all("unsubscribe")
         list_of_entities = ndb.get_multi([ndb.Key(Stream, k) for k in list_of_key_strings])
-        current_user = users.get_current_user()
+        current_user, auth_url, url_link_text = check_auth(self.request.uri)
 
         curentUser = Person(
             identity=current_user.user_id(),                
@@ -113,19 +130,22 @@ class UnsubscribeStream(webapp2.RequestHandler):
 class CreatePage(webapp2.RequestHandler):
     
     def get(self):
-        current_user = users.get_current_user()
-        submit_url = "/manage" 
+
+        submit_url = "/manage"
+        current_user, auth_url, url_link_text = check_auth(self.request.uri)
 
         template_values = {
             'navigation': NAV_LINKS,
             'user': current_user,
-	    'page_title': "connexus",
-	    'page_header': "Connex.us",
+	        'page_title': "connexus",
+	        'page_header': "Connex.us",
             'stream_name_label': Stream.stream_name._verbose_name,
             'subscriber_label': Stream.subscribers._verbose_name,
             'tag_label': Stream.tags._verbose_name,
             'submit_label': "Create Stream",
             'cover_image_label': Stream.cover_image._verbose_name,
+            'auth_url': auth_url,
+            'url_link_text': url_link_text,
             'url': submit_url,
         }
 
@@ -138,7 +158,16 @@ class CreatePage(webapp2.RequestHandler):
 class CreatePost(webapp2.RequestHandler):
 
     def post(self):
-        current_user = users.get_current_user()
+        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+
+        if current_user:
+            url = users.create_logout_url(self.request.uri)
+            url_linktext = 'Logout'
+        else:
+            url = users.create_login_url(self.request.uri)
+            url_linktext = 'Login'
+            logging.info("===================")
+
         u_id = current_user.user_id()
         u_email = current_user.email()
         owner = Person(
@@ -169,46 +198,50 @@ class CreatePost(webapp2.RequestHandler):
 class ViewSinglePage(webapp2.RequestHandler):
     
     def get(self, stream_key_str):
-        current_user = users.get_current_user()
-        stream_key = ndb.Key(urlsafe=stream_key_str)
-        stream_obj = stream_key.get()
-        stream_obj.views = stream_obj.views + 1
-        stream_obj.put()
-        media_items = stream_obj.media_items
-
-        template_values = {
-            'navigation': NAV_LINKS,
-            'user': current_user,
-	    'page_title': "connexus",
-	    'page_header': "Connex.us",
-            'stream_key': stream_key_str,
-            'stream_obj': stream_obj,
-            'media_items': media_items,
-        }
-
-        template = JINJA_ENVIRONMENT.get_template('view_single_stream.html')
-        self.response.write(template.render(template_values))
+        try:
+            current_user, auth_url, url_link_text = check_auth(self.request.uri)
+            stream_key = ndb.Key(urlsafe=stream_key_str)
+            stream_obj = stream_key.get()
+            stream_obj.views = stream_obj.views + 1
+            stream_obj.put()
+            media_items = stream_obj.media_items
+            template_values = {
+                'navigation': NAV_LINKS,
+                'user': current_user,
+                'page_title': "connexus",
+                'page_header': "Connex.us",
+                'stream_key': stream_key_str,
+                'stream_obj': stream_obj,
+                'media_items': media_items,
+                'auth_url': auth_url,
+                'url_link_text': url_link_text,
+            }
+            template = JINJA_ENVIRONMENT.get_template('view_single_stream.html')
+            self.response.write(template.render(template_values))
+        except:
+            self.redirect('/error')
 # [END ViewSinglePage]
 
-import cgi
+# import cgi
 
 # [START PostMedia]
 class PostMedia(blobstore_handlers.BlobstoreUploadHandler):
 
     def post(self, stream_key_str):
-        current_user = users.get_current_user()
-        current_user = Person(
-                identity = current_user.user_id(),
-                email = current_user.email()
-        )
+        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+        current_user = Person( identity = current_user.user_id(), email = current_user.email() )
         try:
-            # TODO: Brice replace this with your backend. 
-            #       This Does not work
-            upload = self.get_uploads()[0]
-            logging.info(upload)
-            user_photo = Media(
-                uploaded_by = current_user,
-                content = upload.key())
+            inputImage = self.request.get("uploadImage")
+            content_type = "image/" + self.request.get("Content-Type")
+
+            logging.info("---")
+            logging.info(content_type)
+            logging.info(self.get_request())
+            logging.info("---")
+            imageStore = ImageStore()
+            imageStore.store_file(str(stream_key_str), inputImage, content_type)
+
+            user_photo = Media( uploaded_by = current_user, content = "999ooo999")
             user_photo.put()
             stream_key = ndb.Key(urlsafe=stream_key_str)
             stream_obj = stream_key.get()
@@ -231,14 +264,16 @@ class PostMedia(blobstore_handlers.BlobstoreUploadHandler):
 class TrendingPage(webapp2.RequestHandler):
     #in progress... need to get images/stream
     def get(self):
-        current_user = users.get_current_user()
+        current_user, auth_url, url_link_text = check_auth(self.request.uri)
         trend_streams = Stream.query().order(Stream.views).fetch(3)
         template_values = {
             'navigation': NAV_LINKS,
             'user': current_user,
-	    'page_title': "connexus",
-	    'page_header': "Connex.us",
-            'top_streams':trend_streams
+            'page_title': "connexus",
+            'page_header': "Connex.us",
+            'top_streams':trend_streams,
+            'auth_url': auth_url,
+            'url_link_text': url_link_text,
         }
         template = JINJA_ENVIRONMENT.get_template('trending_stream.html')
         self.response.write(template.render(template_values))

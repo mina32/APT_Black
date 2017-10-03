@@ -3,18 +3,22 @@
 {% block content %}
     <form action="/create_post" method="post">
         <div class="row">
-            <div class="col-6">
+            <div class="col-6" align="left">
                 <input name="stream_name" type="text" required />
                 <br>
                 {{ stream_name_label }}
                 <br>
                 <input name="subscribers" type="email" multiple />
-                <br>
+                <br><br>
                 <input name="subscribers_msg" type="text" />
                 <br>
                 {{ subscriber_label }}
+                <br><br>
+                <button type="submit">
+                    {{ submit_label }}
+                </button>
             </div>
-            <div class="col-6">
+            <div class="col-6" align="left">
                 <input name="tags" type="text" />
                 <br>
                 {{ tag_label }}
@@ -23,10 +27,11 @@
                 <br>
                 {{ cover_image_label }}
             </div>
+
+
         </div>
-        <button type="submit">
-            {{ submit_label }}
-        </button>
+
+
     </form>
 {% endblock %}
 

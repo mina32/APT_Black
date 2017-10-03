@@ -8,14 +8,14 @@
     <br>
     <div class="file-input-box">
         <form action="/post_media/{{ stream_key }}" method="POST" enctype="multipart/form-data">
-            Upload File: <input type="file" name="file"><br>
+            Upload File: <input type="file" name="uploadImage" accept="image/x-png,image/gif,image/jpeg"><br>
             <input type="submit" name="submit" value="Submit">
         </form>
     </div>
     <br>
     <br>
     <form action="/sub_stream" method="post">
-        <button type="submit" method="post">
+        <button type="submit">
             Subscribe
         </button>
     </form>
