@@ -5,16 +5,17 @@ import os
 import urllib
 import logging
 
-from pprint import pprint
-
-from google.appengine.api import users
-from google.appengine.ext import ndb
-from google.appengine.ext.db import Key
-
 import jinja2
 import webapp2
 
-from models.connexus_models import *
+try:
+    from google.appengine.api import users
+    from google.appengine.ext import ndb
+    from google.appengine.ext.db import Key
+    from models.connexus_models import *
+    from models.image_store import ImageStorage
+except ImportError:
+    raise("Import Error")
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader('templates'),
