@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>{{ query }}</h1>
+    <p>{{ param }}</p>
+    <form action="/search" method="get">
+        <input type="text" name="query">
+        <br>
+        <button type="submit">
+            Search
+        </button>
+    </form>
+    <br>
+    {% if query != "" %}
+        <p>
+            {{ results_length }} results for <b>{{ query }}</b>,
+            <br>
+            click on an image to view stream
+        </p>
+    {% endif %}
+    <div class="search-results">
+        {% for stream in search_results %}
+            <a href="/view/{{ stream.key.urlsafe() }}">{{ stream.stream_name }}</a>
+            <br>
+        {% endfor %}
+    </div>
+ {% endblock %}
+
+

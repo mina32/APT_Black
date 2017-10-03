@@ -258,6 +258,24 @@ class PostMedia(blobstore_handlers.BlobstoreUploadHandler):
 # [END ViewAllPage]
 
 # [START SearchPage]
+class SearchPage(webapp2.RequestHandler):
+    #in progress... 
+    def get(self):
+        current_user = users.get_current_user()
+        # TODO: use Search API
+        search_results = []
+
+        template_values = {
+            'navigation': NAV_LINKS,
+            'user': current_user,
+	    'page_title': "connexus",
+	    'page_header': "Connex.us",
+            'query': self.request.get('query'),
+            'search_results': search_results,
+            'results_length': len(search_results),
+        }
+        template = JINJA_ENVIRONMENT.get_template('search_streams.html')
+        self.response.write(template.render(template_values))
 # [END SearchPage]
 
 # [START TrendingPage]
@@ -300,6 +318,7 @@ app = webapp2.WSGIApplication([
     ('/delete_stream', DeleteStream),
     ('/view/(.+)',ViewSinglePage),
     ('/post_media/(.+)', PostMedia),
+    ('/search', SearchPage),
     #('/view',ViewAllPage),
     ('/trending',TrendingPage),
     ('/error',ErrorPage),
