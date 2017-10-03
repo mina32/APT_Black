@@ -57,22 +57,7 @@ class Stream(ndb.Model):
     date_created = ndb.DateTimeProperty(auto_now_add=True)
     date_last_updated = ndb.DateTimeProperty(auto_now=True)
 
-    #TODO: Fix. Not convinced the search index is being created properly
-    @classmethod
-    def create(cls, params, doc_id):
-        """Create a new product entity from a subset of the given params dict
-        values, and the given doc_id."""
-        stream = cls(
-            id=params['pid'],
-            name=params['stream_name'],
-            tags=params['tags'],
-            doc_id=doc_id)
-        stream.put()
-        index = search.Index('api-stream')
-        index.put(stream)
-        return stream
- 
-# [END Stream]
+   # [END Stream]
 
 
 

@@ -94,6 +94,8 @@ class DeleteStream(webapp2.RequestHandler):
         list_of_key_strings = self.request.get_all("del")
         #logging.info([ndb.Key(Stream, k) for k in list_of_key_strings])
         ndb.delete_multi([ndb.Key(Stream, int(k)) for k in list_of_key_strings])
+        # TODO: DELETE INDEXES
+
         #XXX: We should not hard-code sleep time
         time.sleep(1)
         self.redirect('/manage')
@@ -195,7 +197,6 @@ class CreatePost(webapp2.RequestHandler):
                 email = e
             )
             subscribers.append(s_person)
-        logging.info(subscribers)
 
         # Process tags
         raw_tags = self.request.get('tags')
@@ -210,7 +211,19 @@ class CreatePost(webapp2.RequestHandler):
                 tags=tags,
                 views=0,
         )
-        s.put()
+        s_key = s.put()
+        fields = [
+            search.TextField(name = 'stream_name', value = s.stream_name),
+            search.TextField(name = 'tags', value = s.tags),
+        ]
+        d = search.Document(doc_id = str(s_key.urlsafe()), fields = fields)
+        try:
+            add_result = search.Index('api-stream').put(d)
+            logging.info("Index result: ")
+            logging.info(pprint(add_result))
+            logging.info("\n\n")
+        except search.Error:
+            logging.exception("Error adding document:")
         self.redirect('/manage')
 # [END CreatePost]
 
@@ -284,16 +297,15 @@ class SearchPage(webapp2.RequestHandler):
         current_user = users.get_current_user()
         # TODO: use Search API
         search_results = []
-        options = search.QueryOptions(
-		limit=100,
-		returned_fields=['stream_name', 'id'])
-
 	query_string = self.request.get('query')
         logging.info(query_string)
 	query = search.Query(query_string=query_string) #, options=options)
         logging.info(pprint(search.Index('api-stream')))
 	search_results = search.Index('api-stream').search(query)
         logging.info(pprint(search_results))
+        search_result_keys = [d.doc_id for d in search_results.results]
+        search_result_objs = [ndb.Key(urlsafe=k).get() for k in search_result_keys]
+        logging.info(pprint(search_result_objs))
 
         template_values = {
             'navigation': NAV_LINKS,
@@ -301,8 +313,8 @@ class SearchPage(webapp2.RequestHandler):
 	    'page_title': "connexus",
 	    'page_header': "Connex.us",
             'query': self.request.get('query'),
-            'search_results': search_results,
-            'results_length': 0, #len(search_results),
+            'search_results': search_result_objs,
+            'results_length': len(search_result_objs),
         }
         template = JINJA_ENVIRONMENT.get_template('search_streams.html')
         self.response.write(template.render(template_values))
