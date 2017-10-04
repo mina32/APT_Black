@@ -4,7 +4,7 @@
 
     <div class="container" style="border: 3px solid #000000;">
         {% for item in media_items %}
-            <img class="media-inline" src="{{item}}">
+            <img class="media-inline" src="{{item.content_url}}">
         {% endfor %}
         <br>
     </div>

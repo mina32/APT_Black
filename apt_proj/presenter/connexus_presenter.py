@@ -259,14 +259,20 @@ class UnsubscribeStream(webapp2.RequestHandler):
 class ViewSinglePage(webapp2.RequestHandler):
     
     def get(self, stream_key_str):
-        # try:
-            current_user, auth_url, url_link_text = check_auth(self.request.uri)
+        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+
+        if current_user is None:
+            self.redirect("/auth")
+            return
+
+        try:
+
             stream_key = ndb.Key(urlsafe=stream_key_str)
             stream_obj = stream_key.get()
             stream_obj.views = stream_obj.views + 1
             stream_obj.put()
 
-            media_items = [media.content for media in stream_obj.media_items]
+            media_items = stream_obj.media_items
             logging.info(media_items)
             template_values = {
                 'navigation': NAV_LINKS,
@@ -281,52 +287,42 @@ class ViewSinglePage(webapp2.RequestHandler):
             }
             template = JINJA_ENVIRONMENT.get_template('view_single_stream.html')
             self.response.write(template.render(template_values))
-        # except:
-        #     self.redirect('/error')
+        except:
+            self.redirect('/error')
 # [END ViewSinglePage]
-
-# import cgi
 
 # [START PostMedia]
 class PostMedia(blobstore_handlers.BlobstoreUploadHandler):
 
     def post(self, stream_key_str):
-            current_user, auth_url, url_link_text = check_auth(self.request.uri)
+        current_user, auth_url, url_link_text = check_auth(self.request.uri)
 
-            if current_user is None:
-                self.redirect('/auth')
-                return
+        if current_user is None:
+            self.redirect('/auth')
+            return
 
-            current_user = Person( identity = current_user.user_id(), email = current_user.email() )
-        # try:
+        current_user = Person( identity = current_user.user_id(), email = current_user.email() )
+        try:
             fieldStorage = self.request.POST["uploadImage"]
-            inputImage   = self.request.get("uploadImage")
+            inputImage = self.request.get("uploadImage")
+            uploadComment = self.request.get("uploadComment")
             content_type = fieldStorage.type
-            filename     = fieldStorage.filename
-
-
+            filename = fieldStorage.filename
 
             imageStore = ImageStore()
             imageKey   = "{}-{}".format(stream_key_str, filename)
             imageUrl   = imageStore.store_file(imageKey, inputImage, content_type)
 
-            self.response.write('a')
-            user_photo = Media(uploaded_by=current_user, content=imageUrl, image_store_key=imageUrl)
-            self.response.write('b')
-            user_photo.put()
-            self.response.write('c')
+            user_photo = Media(uploaded_by=current_user, content_url=imageUrl, comment = uploadComment)
+
+            # Update stream
             stream_key = ndb.Key(urlsafe=stream_key_str)
-            self.response.write('d')
             stream_obj = stream_key.get()
-            self.response.write('e')
             stream_obj.media_items.append(user_photo)
-            self.response.write('f')
             stream_obj.put()
-
-            # self.redirect('/view/%s' % stream_key_str)
-
-        # except:
-        #     self.error(500)
+            self.redirect('/view/%s' % stream_key_str)
+        except:
+            self.error(500)
 # [END PostMedia]
 
 # [START ViewAllPage]
@@ -343,8 +339,8 @@ class SearchPage(webapp2.RequestHandler):
         template_values = {
             'navigation': NAV_LINKS,
             'user': current_user,
-	    'page_title': "connexus",
-	    'page_header': "Connex.us",
+            'page_title': "connexus",
+            'page_header': "Connex.us",
             'query': self.request.get('query'),
             'search_results': search_results,
             'results_length': len(search_results),

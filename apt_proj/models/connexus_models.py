@@ -38,10 +38,10 @@ class Person(ndb.Model):
 
 # [START Media]
 class Media(ndb.Model):
-    content = ndb.StringProperty(required=True, verbose_name="image url")
-    uploaded_by = ndb.StructuredProperty(Person)
+    comment = ndb.StringProperty(required=False, verbose_name="comment")
+    uploaded_by   = ndb.StructuredProperty(Person)
     date_uploaded = ndb.DateTimeProperty(auto_now_add=True)
-    image_store_key = ndb.StringProperty(required=True, verbose_name="image store key")
+    content_url   = ndb.StringProperty(required=True, verbose_name="image url")
 # [END Media]
 
 

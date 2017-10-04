@@ -22,6 +22,7 @@ class ImageStore(object):
 
     # [START store_file]
     def store_file(self, fileKey, content, content_type):
+        HOST = "https://storage.googleapis.com"
         storedPath = self.bucket + "/" + fileKey
         write_retry_params = self.gcsHandle.RetryParams(backoff_factor=1.1)
 
@@ -33,7 +34,7 @@ class ImageStore(object):
         # Write to the file
         gcsFile.write(content)
         gcsFile.close()
-        return storedPath
+        return HOST+storedPath
     # [END store_file]
 
     # [START retrieve_file]
