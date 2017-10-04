@@ -37,15 +37,15 @@
             <th>Unsubscribe</th>
         {% for stream in subscribed_streams %}
             <tr>
-                <td>{{ stream.stream_name }}</td>
+                <td><a href="/view/{{ stream.key.urlsafe() }}">{{ stream.stream_name }}</a></td>
                 <td>{{ stream.date_last_updated }}</td>
                 <td>{{ stream.media_item_count }}</td>
                 <td>{{ stream.views }}</td>
-                <td><input name="unsubscribe" id={stream.key} type="checkbox" /></td>
+                <td><input name="unsubscribe" value="{{ stream.key.id() }}" type="checkbox" /></td>
             </tr>
         {% endfor %}
     </table>
-    <button type="submit" method="post">
+    <button type="submit"method="post">
         Unsubscribe Checked Streams
     </button>
     </form>

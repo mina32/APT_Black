@@ -156,18 +156,21 @@ class CreatePage(webapp2.RequestHandler):
 
         u_id = current_user.user_id()
         u_email = current_user.email()
-        owner = Person(
-            identity=u_id,
-            email=u_email
-        )
+        owner = Person(email=u_email)
+        
         # Process subscribers
-        subscriber_emails = self.request.get('subscribers')
-        # TODO: handle email & user mapping
+        subscriber_emails = self.request.get('subscribers').split(",")
+        
+        #TODO: handle email
         subscribers = []
+        for e in subscriber_emails:
+            s_person = Person(email = e)
+            subscribers.append(s_person)
 
         # Process tags
         raw_tags = self.request.get('tags')
-        tags = raw_tags.replace(' ', '').split(r',')
+        #tags = raw_tags.replace(' ', '').split(r',')
+        tags = raw_tags
         s = Stream(
             stream_name=self.request.get('stream_name'),
             owner=owner,
@@ -176,7 +179,18 @@ class CreatePage(webapp2.RequestHandler):
             tags=tags,
             views=0,
         )
-        s = s.put()
+
+        s_key = s.put()
+        fields = [
+            search.TextField(name = 'stream_name', value = s.stream_name),
+            search.TextField(name = 'tags', value = s.tags),
+        ]
+        
+        d = search.Document(doc_id = str(s_key.urlsafe()), fields = fields)
+        try:
+            add_result = search.Index('api-stream').put(d)
+        except search.Error:
+            logging.exception("Error adding document:")
         self.redirect('/manage')
 # [END CreatePage]
 
@@ -189,16 +203,12 @@ class ManagePage(webapp2.RequestHandler):
 
         if current_user:
             owned_query = Stream.query(
-                Stream.owner == Person(
-                    identity=current_user.user_id(),
-                    email=current_user.email()
-                )
+                Stream.owner == Person(email=current_user.email())
             )
             owned_streams = owned_query.fetch()
 
             subscribed_query = Stream.query(
                 Stream.subscribers == Person(
-                    identity=current_user.user_id(),
                     email=current_user.email()
                 )
             )
@@ -228,28 +238,46 @@ class DeleteStream(webapp2.RequestHandler):
         list_of_key_strings = self.request.get_all("del")
         #logging.info([ndb.Key(Stream, k) for k in list_of_key_strings])
         ndb.delete_multi([ndb.Key(Stream, int(k)) for k in list_of_key_strings])
+        # TODO: DELETE INDEXES
+
         #XXX: We should not hard-code sleep time
         time.sleep(1)
         self.redirect('/manage')
 # [END DeleteStream]
+
+# [START SubscribeStream]
+class SubscribeStream(webapp2.RequestHandler):
+    
+    def post(self, stream_key_str):
+        current_user = users.get_current_user()
+        stream_key = ndb.Key(urlsafe=stream_key_str)
+        stream_obj = stream_key.get()
+        current_person = Person(
+            email = current_user.email()
+        )
+        if len(stream_obj.subscribers):
+            stream_obj.subscribers = stream_obj.subscribers.append(current_person)
+        else:
+            stream_obj.subscribers = [current_person]
+        stream_obj.put()
+        self.redirect('/view/' + stream_key_str)
+# [END SubscribeStream]
 
 # [START UnsubscribeStream]
 class UnsubscribeStream(webapp2.RequestHandler):
     
     def post(self):
         list_of_key_strings = self.request.get_all("unsubscribe")
-        list_of_entities = ndb.get_multi([ndb.Key(Stream, k) for k in list_of_key_strings])
-        current_user, auth_url, url_link_text = check_auth(self.request.uri)
-
-        curentUser = Person(
-            identity=current_user.user_id(),                
+        list_of_entities = ndb.get_multi([ndb.Key(Stream, int(k)) for k in list_of_key_strings])
+        current_user = users.get_current_user()
+        current_person = Person(
             email=current_user.email()
         )
         logging.info(list_of_entities)
         for e in list_of_entities:
-            e.subscribers.remove(currentUser)
+            e.subscribers.remove(current_person)
         logging.info(list_of_entities)
-        ndb.put_multi([ndb.Key(Stream, int(k)) for k in list_of_entities])
+        ndb.put_multi(list_of_entities)
         #XXX: We should not hard-code sleep time
         time.sleep(1)
         self.redirect('/manage')
@@ -266,14 +294,12 @@ class ViewSinglePage(webapp2.RequestHandler):
             return
 
         try:
-
             stream_key = ndb.Key(urlsafe=stream_key_str)
             stream_obj = stream_key.get()
             stream_obj.views = stream_obj.views + 1
             stream_obj.put()
 
             media_items = stream_obj.media_items
-            logging.info(media_items)
             template_values = {
                 'navigation': NAV_LINKS,
                 'user': current_user,
@@ -290,6 +316,27 @@ class ViewSinglePage(webapp2.RequestHandler):
         except:
             self.redirect('/error')
 # [END ViewSinglePage]
+
+# [START ViewAllPage]
+class ViewAllPage(webapp2.RequestHandler):
+    
+    def get(self):
+        try:
+            current_user, auth_url, url_link_text = check_auth(self.request.uri)
+            all_streams = Stream.query().fetch()
+            template_values = {
+                'navigation': NAV_LINKS,
+                'user': current_user,
+                'page_title': "connexus",
+                'page_header': "Connex.us",
+                'streams': all_streams,
+            }
+            template = JINJA_ENVIRONMENT.get_template('view_all_streams.html')
+            self.response.write(template.render(template_values))
+        except:
+            self.redirect('/error')
+# [END ViewAllPage]
+
 
 # [START PostMedia]
 class PostMedia(blobstore_handlers.BlobstoreUploadHandler):
@@ -335,6 +382,19 @@ class SearchPage(webapp2.RequestHandler):
         current_user = users.get_current_user()
         # TODO: use Search API
         search_results = []
+        query_string = self.request.get('query')
+        logging.info(query_string)
+        query = search.Query(query_string=query_string) #, options=options)
+        logging.info(pprint(search.Index('api-stream')))
+        search_results = search.Index('api-stream').search(query)
+        logging.info(pprint(search_results))
+        search_result_keys = [d.doc_id for d in search_results.results]
+        search_result_objs = [ndb.Key(urlsafe=k).get() for k in search_result_keys]
+
+        logging.info("------------------------------------------")
+        logging.info(pprint(search_result_objs))
+        logging.info(pprint(search_results))
+
 
         template_values = {
             'navigation': NAV_LINKS,
@@ -343,10 +403,11 @@ class SearchPage(webapp2.RequestHandler):
             'page_header': "Connex.us",
             'query': self.request.get('query'),
             'search_results': search_results,
-            'results_length': len(search_results),
+            # 'results_length': "len(search_results)",
         }
-        template = JINJA_ENVIRONMENT.get_template('search_streams.html')
-        self.response.write(template.render(template_values))
+        # template = JINJA_ENVIRONMENT.get_template('search_streams.html')
+        # self.response.write(template.render(template_values))        # template = JINJA_ENVIRONMENT.get_template('search_streams.html')
+        # self.response.write(template.render(template_values))
 # [END SearchPage]
 
 # [START TrendingPage]
@@ -387,10 +448,12 @@ app = webapp2.WSGIApplication([
     ('/create', CreatePage),
     ('/manage', ManagePage),
     ('/delete_stream', DeleteStream),
+    ('/unsub_stream', UnsubscribeStream),
+    ('/sub_stream/(.+)', SubscribeStream),
     ('/view/(.+)',ViewSinglePage),
     ('/post_media/(.+)', PostMedia),
     ('/search', SearchPage),
-    #('/view',ViewAllPage),
+    ('/view',ViewAllPage),
     ('/trending',TrendingPage),
     ('/error',ErrorPage),
 ], debug=True)

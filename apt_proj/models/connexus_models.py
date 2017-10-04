@@ -7,7 +7,8 @@ import urllib
 from google.appengine.api import users
 from google.appengine.ext import ndb
 from google.appengine.ext import blobstore 
-from google.appengine.api import images 
+from google.appengine.api import images
+from google.appengine.api import search
 
 import jinja2
 import webapp2
@@ -33,14 +34,14 @@ def stream_key(guestbook_name=DEFAULT_STREAM_NAME):
 
 
 class Person(ndb.Model):
-    identity = ndb.StringProperty()
+    # identity = ndb.StringProperty()
     email = ndb.StringProperty()
 
 # [START Media]
 class Media(ndb.Model):
-    comment = ndb.StringProperty(required=False, verbose_name="comment")
-    uploaded_by   = ndb.StructuredProperty(Person)
+    uploaded_by = ndb.StructuredProperty(Person)
     date_uploaded = ndb.DateTimeProperty(auto_now_add=True)
+    comment = ndb.StringProperty(required=False, verbose_name="comment")
     content_url   = ndb.StringProperty(required=True, verbose_name="image url")
 # [END Media]
 
@@ -53,7 +54,7 @@ class Stream(ndb.Model):
     media_item_count = ndb.ComputedProperty(lambda x: len(x.media_items))
     cover_image = ndb.StringProperty(verbose_name="URL to cover image (Can be empty)")
     subscribers = ndb.StructuredProperty(Person, repeated=True, verbose_name="Add subscribers")
-    tags = ndb.StringProperty(repeated=True, verbose_name="Tag your stream")
+    tags = ndb.StringProperty(verbose_name="Tag your stream")
     views = ndb.IntegerProperty()
     date_created = ndb.DateTimeProperty(auto_now_add=True)
     date_last_updated = ndb.DateTimeProperty(auto_now=True)

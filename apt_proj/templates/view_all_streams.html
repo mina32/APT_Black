@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <h2>View All Streams</h2>    
+    <div class="row">
+        {% for stream in streams %}
+            <div class="col-3">
+                <a href="/view/{{ stream.key.urlsafe() }}">{{ stream.stream_name }}</a>
+            </div>
+        {% endfor %}
+    </div>
+    
+{% endblock %}
+
+
