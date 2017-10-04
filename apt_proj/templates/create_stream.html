@@ -2,15 +2,16 @@
 
 {% block content %}
     <form action="/create_post" method="post">
-        <div class="row">
+        <div class="row create">
             <div class="col-6" align="left">
                 <input name="stream_name" type="text" required />
                 <br>
                 {{ stream_name_label }}
                 <br>
+                <br>
                 <input name="subscribers" type="email" multiple />
-                <br><br>
-                <input name="subscribers_msg" type="text" />
+                <br>
+                <input name="subscribers_msg" type="text" placeholder="Optional message for invite" />
                 <br>
                 {{ subscriber_label }}
                 <br><br>

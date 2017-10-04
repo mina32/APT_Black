@@ -18,6 +18,8 @@ try:
     from google.appengine.ext.webapp import blobstore_handlers
     from models.connexus_models import *
     from models.image_store import ImageStore
+    from google.appengine.api import app_identity
+    from google.appengine.api import mail
 except ImportError:
     raise("Import Error")
 
@@ -49,6 +51,7 @@ def check_auth(uri):
         auth_url = users.create_login_url(uri)
         url_link_text = 'Login'
     return current_user, auth_url, url_link_text
+
 
 # [START ManagePage]
 class ManagePage(webapp2.RequestHandler):
@@ -190,14 +193,13 @@ class CreatePost(webapp2.RequestHandler):
         )
         # Process subscribers
         subscriber_emails = self.request.get('subscribers').split(",")
-        #TODO: handle email
         subscribers = []
         for e in subscriber_emails:
             s_person = Person(
                 email = e
             )
             subscribers.append(s_person)
-
+        
         # Process tags
         raw_tags = self.request.get('tags')
         #TODO: Decide if we want to go back to repeated
@@ -224,6 +226,17 @@ class CreatePost(webapp2.RequestHandler):
             logging.info("\n\n")
         except search.Error:
             logging.exception("Error adding document:")
+
+        #Subscriber Emails
+        for e in subscriber_emails:
+            mail.send_mail(sender=app_identity.get_application_id() + "@appspot.gserviceaccount.com",
+                to="<" + e + ">",
+                subject="New subscription alert",
+                body="You have been added as a subscriber to the stream at " + 
+                    app_identity.get_application_id() + ".appspot.com/view/" + s_key.urlsafe()
+                    + ".\nMessage from stream creator: " + self.request.get('subscribers_msg') 
+            )
+
         self.redirect('/manage')
 # [END CreatePost]
 
