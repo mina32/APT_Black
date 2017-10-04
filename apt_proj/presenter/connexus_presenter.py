@@ -255,7 +255,26 @@ class ViewSinglePage(webapp2.RequestHandler):
             self.redirect('/error')
 # [END ViewSinglePage]
 
-# import cgi
+# [START ViewAllPage]
+class ViewAllPage(webapp2.RequestHandler):
+    
+    def get(self):
+        try:
+            current_user, auth_url, url_link_text = check_auth(self.request.uri)
+            all_streams = Stream.query().fetch()
+            template_values = {
+                'navigation': NAV_LINKS,
+                'user': current_user,
+                'page_title': "connexus",
+                'page_header': "Connex.us",
+                'streams': all_streams,
+            }
+            template = JINJA_ENVIRONMENT.get_template('view_all_streams.html')
+            self.response.write(template.render(template_values))
+        except:
+            self.redirect('/error')
+# [END ViewAllPage]
+
 
 # [START PostMedia]
 class PostMedia(blobstore_handlers.BlobstoreUploadHandler):
@@ -363,7 +382,7 @@ app = webapp2.WSGIApplication([
     ('/view/(.+)',ViewSinglePage),
     ('/post_media/(.+)', PostMedia),
     ('/search', SearchPage),
-    #('/view',ViewAllPage),
+    ('/view',ViewAllPage),
     ('/trending',TrendingPage),
     ('/error',ErrorPage),
 ], debug=True)
