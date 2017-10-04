@@ -34,7 +34,6 @@ def stream_key(guestbook_name=DEFAULT_STREAM_NAME):
 
 
 class Person(ndb.Model):
-    # identity = ndb.StringProperty()
     email = ndb.StringProperty()
 
 # [START Media]
@@ -59,7 +58,7 @@ class Stream(ndb.Model):
     date_created = ndb.DateTimeProperty(auto_now_add=True)
     date_last_updated = ndb.DateTimeProperty(auto_now=True)
 
-# [END Stream]
+   # [END Stream]
 
 
 
