@@ -21,22 +21,24 @@ class ImageStore(object):
         self.bucket = '/' + self.bucketName
 
     # [START store_file]
-    def store_file(self, filename, content, content_type='image/png'):
-        storedPath = self.bucket + "/" + filename + ".png"
+    def store_file(self, fileKey, content, content_type):
+        storedPath = self.bucket + "/" + fileKey
         write_retry_params = self.gcsHandle.RetryParams(backoff_factor=1.1)
 
         # Open a file
         gcsFile = self.gcsHandle.open(storedPath, 'w', content_type=content_type,
-                                      options={'x-goog-acl': 'authenticated-read'}, retry_params=write_retry_params)
+                                      options={'x-goog-acl': 'public-read'},
+                                      retry_params=write_retry_params)
 
         # Write to the file
         gcsFile.write(content)
         gcsFile.close()
+        return storedPath
     # [END store_file]
 
     # [START retrieve_file]
-    def retrieve_file(self, filename):
-        storedPath = self.bucket + "/" + filename
+    def retrieve_file(self, fileKey):
+        storedPath = self.bucket + "/" + fileKey
         # Open file
         gcsFile = self.gcsHandle.open(storedPath)
 
@@ -47,11 +49,11 @@ class ImageStore(object):
     # [END retrieve_file]
 
     # [START delete_file]
-    def delete_files(self, filenames):
-        if not isinstance(filenames, list):
+    def delete_files(self, fileKeys):
+        if not isinstance(fileKeys, list):
             raise("Supply a list of files to delete")
 
-        for file in filenames:
+        for file in fileKeys:
             try:
                 storedFile = self.bucket + "/" + file
                 self.gcsHandle.delete(storedFile)

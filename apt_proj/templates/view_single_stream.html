@@ -1,24 +1,37 @@
 {% extends "base.html" %}
 
 {% block content %}
-    
-    {% for item in media_items %}
-        <img class="media-inline" src={item.content}> 
-    {% endfor %}
+
+    <div class="container" style="border: 3px solid #000000;">
+        {% for item in media_items %}
+            <img class="media-inline" src="{{item}}">
+        {% endfor %}
+        <br>
+    </div>
     <br>
-    <div class="file-input-box">
+    <div class="file-input-box container" style="border: 3px solid #000000;">
         <form action="/post_media/{{ stream_key }}" method="POST" enctype="multipart/form-data">
-            Upload File: <input type="file" name="uploadImage" accept="image/x-png,image/gif,image/jpeg"><br>
-            <input type="submit" name="submit" value="Submit">
+            <div class="row">
+                <div class="col-6">
+                    <input type="file" name="uploadImage" accept="image/*"><br><br>
+                    <input type="submit" name="submit" value="Upload file">
+                </div>
+
+                <div class="col-6">
+                    <input type="text" name="uploadComment" placeholder="Comment"><br><br>
+                    <h3>Add an image</h3>
+                </div>
+            </div>
         </form>
     </div>
     <br>
-    <br>
-    <form action="/sub_stream" method="post">
-        <button type="submit">
-            Subscribe
-        </button>
-    </form>
+    <div class="container" style="border: 3px solid #000000;">
+        <form action="/sub_stream" method="post">
+            <div class="col-6">
+                <button type="submit" style="padding: auto;"> Subscribe </button><br><br>
+            </div>
+        </form>
+    </div>
 {% endblock %}
 
 

@@ -51,42 +51,173 @@ def check_auth(uri):
         url_link_text = 'Login'
     return current_user, auth_url, url_link_text
 
+
+# [START UserAuthentication]
+class Auth(webapp2.RequestHandler):
+
+    def get(self):
+        logging.info("-------------------")
+        submit_url = "/manage"
+        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+
+        if current_user:
+            # Proceed to Create stream page if user exists
+            template_values = {
+                'navigation': NAV_LINKS,
+                'user': current_user,
+                'page_header': "Connex.us",
+                'stream_name_label': Stream.stream_name._verbose_name,
+                'subscriber_label': Stream.subscribers._verbose_name,
+                'tag_label': Stream.tags._verbose_name,
+                'submit_label': "Create Stream",
+                'cover_image_label': Stream.cover_image._verbose_name,
+                'auth_url': auth_url,
+                'url_link_text': url_link_text,
+                'url': submit_url,
+            }
+
+            template = JINJA_ENVIRONMENT.get_template('create_stream.html')
+            self.response.write(template.render(template_values))
+        else:
+            # Return the login page
+            template_values = {
+                'page_header': "Welcome to Connexus!",
+                'auth_url': auth_url,
+                'url_link_text': url_link_text,
+            }
+
+            template = JINJA_ENVIRONMENT.get_template('auth.html')
+            self.response.write(template.render(template_values))
+
+    def post(self):
+        submit_url = "/manage"
+
+        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+
+        tp = users.User(self.request.get("userEmail"))
+        logging.info(tp.user_id())
+        # TODO Use this userEmail and Password to sign in
+        logging.info(self.request.get("userEmail"))
+        logging.info(self.request.get("userPassword"))
+
+        template_values = {
+            'navigation': NAV_LINKS,
+            'user': current_user,
+            'page_title': "connexus",
+            'page_header': "Connex.us",
+            'stream_name_label': Stream.stream_name._verbose_name,
+            'subscriber_label': Stream.subscribers._verbose_name,
+            'tag_label': Stream.tags._verbose_name,
+            'submit_label': "Create Stream",
+            'cover_image_label': Stream.cover_image._verbose_name,
+            'auth_url': auth_url,
+            'url_link_text': url_link_text,
+            'url': submit_url,
+        }
+
+        template = JINJA_ENVIRONMENT.get_template('create_stream.html')
+        self.response.write(template.render(template_values))
+# [END UserAuthentication]
+
+# [START CreatePage]
+class CreatePage(webapp2.RequestHandler):
+    def get(self):
+        submit_url = "/manage"
+        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+
+        if current_user is None:
+            self.redirect("/auth")
+            return
+
+        template_values = {
+            'navigation': NAV_LINKS,
+            'user': current_user,
+            'page_title': "connexus",
+            'page_header': "Connex.us",
+            'stream_name_label': Stream.stream_name._verbose_name,
+            'subscriber_label': Stream.subscribers._verbose_name,
+            'tag_label': Stream.tags._verbose_name,
+            'submit_label': "Create Stream",
+            'cover_image_label': Stream.cover_image._verbose_name,
+            'auth_url': auth_url,
+            'url_link_text': url_link_text,
+            'url': submit_url,
+        }
+
+        template = JINJA_ENVIRONMENT.get_template('create_stream.html')
+        self.response.write(template.render(template_values))
+
+    def post(self):
+        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+
+        if current_user is None:
+            self.redirect("/auth")
+            return
+
+        u_id = current_user.user_id()
+        u_email = current_user.email()
+        owner = Person(
+            identity=u_id,
+            email=u_email
+        )
+        # Process subscribers
+        subscriber_emails = self.request.get('subscribers')
+        # TODO: handle email & user mapping
+        subscribers = []
+
+        # Process tags
+        raw_tags = self.request.get('tags')
+        tags = raw_tags.replace(' ', '').split(r',')
+        s = Stream(
+            stream_name=self.request.get('stream_name'),
+            owner=owner,
+            cover_image=self.request.get('cover_image'),
+            subscribers=subscribers,
+            tags=tags,
+            views=0,
+        )
+        s = s.put()
+        self.redirect('/manage')
+# [END CreatePage]
+
+
 # [START ManagePage]
 class ManagePage(webapp2.RequestHandler):
     
     def get(self):
         current_user, auth_url, url_link_text = check_auth(self.request.uri)
 
-        owned_query = Stream.query(
-            Stream.owner == Person(
-                identity=current_user.user_id(),                
-                email=current_user.email()
+        if current_user:
+            owned_query = Stream.query(
+                Stream.owner == Person(
+                    identity=current_user.user_id(),
+                    email=current_user.email()
+                )
             )
-        )
-        owned_streams = owned_query.fetch()
+            owned_streams = owned_query.fetch()
 
-        subscribed_query = Stream.query(
-            Stream.subscribers == Person(
-                identity=current_user.user_id(),                
-                email=current_user.email()
+            subscribed_query = Stream.query(
+                Stream.subscribers == Person(
+                    identity=current_user.user_id(),
+                    email=current_user.email()
+                )
             )
-        )
-        subscribed_streams = subscribed_query.fetch()
+            subscribed_streams = subscribed_query.fetch()
 
-
-        template_values = {
-            'navigation': NAV_LINKS,
-            'user': current_user,
-	        'page_title': "connexus",
-	        'page_header': "Connex.us",
-            'subscribed_streams': subscribed_streams,
-            'owned_streams': owned_streams,
-            'auth_url': auth_url,
-            'url_link_text': url_link_text,
-        }
-
-        template = JINJA_ENVIRONMENT.get_template('manage_streams.html')
-        self.response.write(template.render(template_values))
+            template_values = {
+                'navigation': NAV_LINKS,
+                'user': current_user,
+                'page_title': "connexus",
+                'page_header': "Connex.us",
+                'subscribed_streams': subscribed_streams,
+                'owned_streams': owned_streams,
+                'auth_url': auth_url,
+                'url_link_text': url_link_text,
+            }
+            template = JINJA_ENVIRONMENT.get_template('manage_streams.html')
+            self.response.write(template.render(template_values))
+        else:
+            self.redirect("/auth")
 # [END ManagePage]
 
 # [START DeleteStream]
@@ -101,7 +232,6 @@ class DeleteStream(webapp2.RequestHandler):
         time.sleep(1)
         self.redirect('/manage')
 # [END DeleteStream]
-
 
 # [START UnsubscribeStream]
 class UnsubscribeStream(webapp2.RequestHandler):
@@ -125,86 +255,19 @@ class UnsubscribeStream(webapp2.RequestHandler):
         self.redirect('/manage')
 # [END UnsubscribeStream]
 
-
-# [START CreatePage]
-class CreatePage(webapp2.RequestHandler):
-    
-    def get(self):
-
-        submit_url = "/manage"
-        current_user, auth_url, url_link_text = check_auth(self.request.uri)
-
-        template_values = {
-            'navigation': NAV_LINKS,
-            'user': current_user,
-	        'page_title': "connexus",
-	        'page_header': "Connex.us",
-            'stream_name_label': Stream.stream_name._verbose_name,
-            'subscriber_label': Stream.subscribers._verbose_name,
-            'tag_label': Stream.tags._verbose_name,
-            'submit_label': "Create Stream",
-            'cover_image_label': Stream.cover_image._verbose_name,
-            'auth_url': auth_url,
-            'url_link_text': url_link_text,
-            'url': submit_url,
-        }
-
-        template = JINJA_ENVIRONMENT.get_template('create_stream.html')
-        self.response.write(template.render(template_values))
-# [END CreatePage]
-
-
-# [START CreatePost]
-class CreatePost(webapp2.RequestHandler):
-
-    def post(self):
-        current_user, auth_url, url_link_text = check_auth(self.request.uri)
-
-        if current_user:
-            url = users.create_logout_url(self.request.uri)
-            url_linktext = 'Logout'
-        else:
-            url = users.create_login_url(self.request.uri)
-            url_linktext = 'Login'
-            logging.info("===================")
-
-        u_id = current_user.user_id()
-        u_email = current_user.email()
-        owner = Person(
-                identity=u_id,
-                email=u_email
-        )
-        # Process subscribers
-        subscriber_emails = self.request.get('subscribers')
-        #TODO: handle email & user mapping 
-        subscribers = []
-
-        # Process tags
-        raw_tags = self.request.get('tags')
-        tags = raw_tags.replace(' ','').split(r',')
-        s = Stream(
-                stream_name=self.request.get('stream_name'),
-                owner=owner,
-                cover_image=self.request.get('cover_image'),
-                subscribers=subscribers,
-                tags=tags,
-                views=0,
-        )
-        s.put()
-        self.redirect('/manage')
-# [END CreatePost]
-
 # [START ViewSinglePage]
 class ViewSinglePage(webapp2.RequestHandler):
     
     def get(self, stream_key_str):
-        try:
+        # try:
             current_user, auth_url, url_link_text = check_auth(self.request.uri)
             stream_key = ndb.Key(urlsafe=stream_key_str)
             stream_obj = stream_key.get()
             stream_obj.views = stream_obj.views + 1
             stream_obj.put()
-            media_items = stream_obj.media_items
+
+            media_items = [media.content for media in stream_obj.media_items]
+            logging.info(media_items)
             template_values = {
                 'navigation': NAV_LINKS,
                 'user': current_user,
@@ -218,8 +281,8 @@ class ViewSinglePage(webapp2.RequestHandler):
             }
             template = JINJA_ENVIRONMENT.get_template('view_single_stream.html')
             self.response.write(template.render(template_values))
-        except:
-            self.redirect('/error')
+        # except:
+        #     self.redirect('/error')
 # [END ViewSinglePage]
 
 # import cgi
@@ -228,30 +291,42 @@ class ViewSinglePage(webapp2.RequestHandler):
 class PostMedia(blobstore_handlers.BlobstoreUploadHandler):
 
     def post(self, stream_key_str):
-        current_user, auth_url, url_link_text = check_auth(self.request.uri)
-        current_user = Person( identity = current_user.user_id(), email = current_user.email() )
-        try:
-            inputImage = self.request.get("uploadImage")
-            content_type = "image/" + self.request.get("Content-Type")
+            current_user, auth_url, url_link_text = check_auth(self.request.uri)
 
-            logging.info("---")
-            logging.info(content_type)
-            logging.info(self.get_request())
-            logging.info("---")
+            if current_user is None:
+                self.redirect('/auth')
+                return
+
+            current_user = Person( identity = current_user.user_id(), email = current_user.email() )
+        # try:
+            fieldStorage = self.request.POST["uploadImage"]
+            inputImage   = self.request.get("uploadImage")
+            content_type = fieldStorage.type
+            filename     = fieldStorage.filename
+
+
+
             imageStore = ImageStore()
-            imageStore.store_file(str(stream_key_str), inputImage, content_type)
+            imageKey   = "{}-{}".format(stream_key_str, filename)
+            imageUrl   = imageStore.store_file(imageKey, inputImage, content_type)
 
-            user_photo = Media( uploaded_by = current_user, content = "999ooo999")
+            self.response.write('a')
+            user_photo = Media(uploaded_by=current_user, content=imageUrl, image_store_key=imageUrl)
+            self.response.write('b')
             user_photo.put()
+            self.response.write('c')
             stream_key = ndb.Key(urlsafe=stream_key_str)
+            self.response.write('d')
             stream_obj = stream_key.get()
+            self.response.write('e')
             stream_obj.media_items.append(user_photo)
+            self.response.write('f')
             stream_obj.put()
 
-            self.redirect('/view/%s' % stream_key_str)
+            # self.redirect('/view/%s' % stream_key_str)
 
-        except:
-            self.error(500)
+        # except:
+        #     self.error(500)
 # [END PostMedia]
 
 # [START ViewAllPage]
@@ -311,9 +386,9 @@ class ErrorPage(webapp2.RequestHandler):
 # [START app]
 # TODO: uncomment as pages get developed
 app = webapp2.WSGIApplication([
-    ('/', CreatePage),
+    ('/', Auth),
+    ('/auth', Auth),
     ('/create', CreatePage),
-    ('/create_post', CreatePost),
     ('/manage', ManagePage),
     ('/delete_stream', DeleteStream),
     ('/view/(.+)',ViewSinglePage),

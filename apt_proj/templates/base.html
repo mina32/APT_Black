@@ -3,7 +3,7 @@
 <head>
     <link type="text/css" rel="stylesheet" href="/bootstrap/css/bootstrap.css">
     <link type="text/css" rel="stylesheet" href="/bootstrap/css/bootstrap-responsive.css">
-    <title>{{ page_title }}</title>
+    <title>connexus</title>
 
     <style type="text/css">
 
@@ -12,7 +12,7 @@
             padding: 10px;
             margin: auto;
             max-width:800;
-            border: 3px solid #FF0000;
+            border: 3px solid #000000;
             padding-top: 30px;
             padding-bottom: 30px;
         }
@@ -42,18 +42,8 @@
             margin-top: 10px;
         }
 
-        #ulFIt {
-            display: flex;
-            flex-direction: row;
-            margin-left: -1px;
-        }
-        #liFIt {
-            flex-grow: 0;
-            flex-basis: auto;
-            margin:0;
-            text-align: left;
-            border-left: 1px solid #000;
-            background-color: #fff;
+        #sep{
+            border-right: 1px solid #000;
         }
     </style>
 </head>
@@ -65,23 +55,23 @@
         </div>
 
         <div class="container">
-            <ul class="nav" id="ulFIt">
+            <ul class="nav" >
                 {% for item in navigation %}
                     {% if item['active'] %}
-                        <li class="nav-item" id="liFIt">
-                            <a class="nav-link" href="{{ item['link'] }}">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ item['link'] }}" id="sep">
                                 {{ item['label'] }}
                             </a>
                         </li>
                     {% else %}
                         <li class="nav-item active" id="liFIt">
-                            <a class="nav-link" href="{{ item['link'] }}">
+                            <a class="nav-link" href="{{ item['link'] }}" id="sep">
                                 {{ item['label'] }}
                             </a>
                         </li>
                     {% endif %}
                 {% endfor %}
-                        <li id="liFIt">
+                        <li>
                             <a href="{{ auth_url }}" class="btn">{{ url_link_text }}</a>
                         </li>
             </ul>
