@@ -20,7 +20,14 @@
     {% endif %}
     <div class="search-results">
         {% for stream in search_results %}
-            <a href="/view/{{ stream.key.urlsafe() }}">{{ stream.stream_name }}</a>
+            <div class="col-3">
+                <div class="stream-logo">
+                    <a href="/view/{{ stream.key.urlsafe() }}">
+                        <img class="stream-logo-img" src="{{ stream.cover_image }}" alt="" >
+                        <p class="stream-logo-text">{{ stream.stream_name }}</p> 
+                    </a>
+                </div>
+            </div>
             <br>
         {% endfor %}
     </div>
