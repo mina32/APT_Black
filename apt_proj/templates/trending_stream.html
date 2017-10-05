@@ -7,12 +7,12 @@
     {% for stream in streams %}
     <div class="col-md-3">
         <div class="thumbnail">
-            <a href="/view?stream_name={{ stream.name }}&increment=1">
+            <a href="/view?stream_name={{ stream.stream_name }}&increment=1">
                 <img src="{{ stream.cover_image }}" class="img-responsive">
             </a>
             <div class="caption">
-                <a href="/view?stream_name={{ stream.name }}&increment=1">
-                    <h3 class="text-center">{{ stream.name }}</h3>
+                <a href="/view?stream_name={{ stream.stream_name }}&increment=1">
+                    <h3 class="text-center">{{ stream.stream_name }}</h3>
                     <h4 class="text-center">{{ stream.recent_views | length }} in past hour</h4>
                 </a>
             </div>
@@ -20,7 +20,7 @@
     </div>
     {% endfor %}
     <div class="col-md-3">
-        <form action="/trending" method="post">
+        <form action="/trend_email" method="post">
             <div class="checkbox">
                 <label>
                     <input type="checkbox" name="none"

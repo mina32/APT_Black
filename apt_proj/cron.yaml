@@ -1,4 +1,7 @@
 cron:
-- description: update trending report
-  url: /trending
+- description: check to see if e-mail should be sent
+  url: /trend_email
+  schedule: every 5 minutes
+- description: updated leaderboard scores
+  url: /trending_calc
   schedule: every 5 minutes
