@@ -238,10 +238,10 @@ class DeleteStream(webapp2.RequestHandler):
     def post(self):
         current_user, auth_url, url_link_text = check_auth(self.request.uri)
         list_of_key_strings = self.request.get_all("del")
+        for k in list_of_key_strings:
+             search.Index('api-stream').delete(ndb.Key(Stream, int(k)).urlsafe())
         #logging.info([ndb.Key(Stream, k) for k in list_of_key_strings])
         ndb.delete_multi([ndb.Key(Stream, int(k)) for k in list_of_key_strings])
-        # TODO: DELETE INDEXES
-
         #XXX: We should not hard-code sleep time
         time.sleep(1)
         self.redirect('/manage')
@@ -343,8 +343,6 @@ class CreatePost(webapp2.RequestHandler):
         
         # Process tags
         raw_tags = self.request.get('tags')
-        #TODO: Decide if we want to go back to repeated
-        #tags = raw_tags.replace(' ','').split(r',')
         tags = raw_tags
         s = Stream(
                 stream_name=self.request.get('stream_name'),
@@ -478,7 +476,6 @@ class SearchPage(webapp2.RequestHandler):
     #in progress... 
     def get(self):
         current_user = users.get_current_user()
-        # TODO: use Search API
         search_results = []
         query_string = self.request.get('query')
         logging.info(query_string)
@@ -542,6 +539,7 @@ app = webapp2.WSGIApplication([
     ('/', Auth),
     ('/auth', Auth),
     ('/create', CreatePage),
+    ('/create_post', CreatePost),
     ('/manage', ManagePage),
     ('/delete_stream', DeleteStream),
     ('/unsub_stream', UnsubscribeStream),
