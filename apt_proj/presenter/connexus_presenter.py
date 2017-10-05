@@ -155,6 +155,13 @@ class CreatePage(webapp2.RequestHandler):
         if current_user is None:
             self.redirect("/auth")
             return
+        # Check name uniqueness
+        name_query = Stream.query(
+            Stream.stream_name == self.request.get('stream_name')
+        )
+        query_results = name_query.fetch()
+        if (len(query_results) > 0):
+            return self.redirect('/error')
 
         u_id = current_user.user_id()
         u_email = current_user.email()
