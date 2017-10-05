@@ -352,7 +352,7 @@ class PostMedia(blobstore_handlers.BlobstoreUploadHandler):
             self.redirect('/auth')
             return
 
-        current_user = Person( identity = current_user.user_id(), email = current_user.email() )
+        current_user = Person( email = current_user.email() )
         try:
             fieldStorage = self.request.POST["uploadImage"]
             inputImage = self.request.get("uploadImage")
