@@ -163,7 +163,6 @@ class CreatePage(webapp2.RequestHandler):
         # Process subscribers
         subscriber_emails = self.request.get('subscribers').split(",")
         
-        #TODO: handle email
         subscribers = []
         for e in subscriber_emails:
             s_person = Person(email = e)
@@ -171,7 +170,6 @@ class CreatePage(webapp2.RequestHandler):
 
         # Process tags
         raw_tags = self.request.get('tags')
-        #tags = raw_tags.replace(' ', '').split(r',')
         tags = raw_tags
         s = Stream(
             stream_name=self.request.get('stream_name'),
@@ -257,10 +255,14 @@ class SubscribeStream(webapp2.RequestHandler):
         current_person = Person(
             email = current_user.email()
         )
-        if len(stream_obj.subscribers):
-            stream_obj.subscribers = stream_obj.subscribers.append(current_person)
+        if len(list(stream_obj.subscribers)):
+            subscribers = [p for p in stream_obj.subscribers]
+            subscribers.append(current_person)
+            stream_obj.subscribers = subscribers
         else:
-            stream_obj.subscribers = [current_person]
+            subscribers = []
+            subscribers.append(current_person)
+            stream_obj.subscribers = subscribers
         stream_obj.put()
         self.redirect('/view/' + stream_key_str)
 # [END SubscribeStream]
@@ -284,100 +286,6 @@ class UnsubscribeStream(webapp2.RequestHandler):
         time.sleep(1)
         self.redirect('/manage')
 # [END UnsubscribeStream]
-
-# [START CreatePage]
-class CreatePage(webapp2.RequestHandler):
-    
-    def get(self):
-
-        submit_url = "/manage"
-        current_user, auth_url, url_link_text = check_auth(self.request.uri)
-
-        template_values = {
-            'navigation': NAV_LINKS,
-            'user': current_user,
-	        'page_title': "connexus",
-	        'page_header': "Connex.us",
-            'stream_name_label': Stream.stream_name._verbose_name,
-            'subscriber_label': Stream.subscribers._verbose_name,
-            'tag_label': Stream.tags._verbose_name,
-            'submit_label': "Create Stream",
-            'cover_image_label': Stream.cover_image._verbose_name,
-            'auth_url': auth_url,
-            'url_link_text': url_link_text,
-            'url': submit_url,
-        }
-
-        template = JINJA_ENVIRONMENT.get_template('create_stream.html')
-        self.response.write(template.render(template_values))
-# [END CreatePage]
-
-
-# [START CreatePost]
-class CreatePost(webapp2.RequestHandler):
-
-    def post(self):
-        current_user, auth_url, url_link_text = check_auth(self.request.uri)
-
-        if current_user:
-            url = users.create_logout_url(self.request.uri)
-            url_linktext = 'Logout'
-        else:
-            url = users.create_login_url(self.request.uri)
-            url_linktext = 'Login'
-            logging.info("===================")
-
-        u_id = current_user.user_id()
-        u_email = current_user.email()
-        owner = Person(
-                email=u_email
-        )
-        # Process subscribers
-        subscriber_emails = self.request.get('subscribers').split(",")
-        subscribers = []
-        for e in subscriber_emails:
-            s_person = Person(
-                email = e
-            )
-            subscribers.append(s_person)
-        
-        # Process tags
-        raw_tags = self.request.get('tags')
-        tags = raw_tags
-        s = Stream(
-                stream_name=self.request.get('stream_name'),
-                owner=owner,
-                cover_image=self.request.get('cover_image'),
-                subscribers=subscribers,
-                tags=tags,
-                views=0,
-        )
-        s_key = s.put()
-        fields = [
-            search.TextField(name = 'stream_name', value = s.stream_name),
-            search.TextField(name = 'tags', value = s.tags),
-        ]
-        d = search.Document(doc_id = str(s_key.urlsafe()), fields = fields)
-        try:
-            add_result = search.Index('api-stream').put(d)
-            logging.info("Index result: ")
-            logging.info(pprint(add_result))
-            logging.info("\n\n")
-        except search.Error:
-            logging.exception("Error adding document:")
-
-        #Subscriber Emails
-        for e in subscriber_emails:
-            mail.send_mail(sender=app_identity.get_application_id() + "@appspot.gserviceaccount.com",
-                to="<" + e + ">",
-                subject="New subscription alert",
-                body="You have been added as a subscriber to the stream at " + 
-                    app_identity.get_application_id() + ".appspot.com/view/" + s_key.urlsafe()
-                    + ".\nMessage from stream creator: " + self.request.get('subscribers_msg') 
-            )
-
-        self.redirect('/manage')
-# [END CreatePost]
 
 # [START ViewSinglePage]
 class ViewSinglePage(webapp2.RequestHandler):
@@ -539,7 +447,6 @@ app = webapp2.WSGIApplication([
     ('/', Auth),
     ('/auth', Auth),
     ('/create', CreatePage),
-    ('/create_post', CreatePost),
     ('/manage', ManagePage),
     ('/delete_stream', DeleteStream),
     ('/unsub_stream', UnsubscribeStream),
