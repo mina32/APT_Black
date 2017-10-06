@@ -30,6 +30,9 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 # [END imports]
 
+REPORT_RATE_MINUTES = "0"
+LAST_REPORT = None
+
 NAV_LINKS = [
     {"label": "Manage", "link": "/manage"},
     {"label": "Create", "link": "/create"},
@@ -311,7 +314,6 @@ class ViewSinglePage(webapp2.RequestHandler):
             stream_obj.put()
 
             media_items = stream_obj.media_items
-            length = len(media_items)
             template_values = {
                 'navigation': NAV_LINKS,
                 'user': current_user,
@@ -320,7 +322,6 @@ class ViewSinglePage(webapp2.RequestHandler):
                 'stream_key': stream_key_str,
                 'stream_obj': stream_obj,
                 'media_items': media_items,
-                'length': length,
                 'auth_url': auth_url,
                 'url_link_text': url_link_text,
             }
@@ -343,8 +344,6 @@ class ViewAllPage(webapp2.RequestHandler):
                 'page_title': "connexus",
                 'page_header': "Connex.us",
                 'streams': all_streams,
-                'auth_url': auth_url,
-                'url_link_text': url_link_text,
             }
             template = JINJA_ENVIRONMENT.get_template('view_all_streams.html')
             self.response.write(template.render(template_values))
@@ -394,7 +393,7 @@ class PostMedia(blobstore_handlers.BlobstoreUploadHandler):
 class SearchPage(webapp2.RequestHandler):
     #in progress... 
     def get(self):
-        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+        current_user = users.get_current_user()
         search_results = []
         query_string = self.request.get('query')
         logging.info(query_string)
@@ -418,8 +417,6 @@ class SearchPage(webapp2.RequestHandler):
             'query': self.request.get('query'),
             'search_results': search_result_objs,
             'results_length': len(search_result_objs),
-            'auth_url': auth_url,
-            'url_link_text': url_link_text,
         }
         template = JINJA_ENVIRONMENT.get_template('search_streams.html')
         self.response.write(template.render(template_values))
@@ -427,23 +424,94 @@ class SearchPage(webapp2.RequestHandler):
 
 # [START TrendingPage]
 class TrendingPage(webapp2.RequestHandler):
-    #in progress... need to get images/stream
     def get(self):
         current_user, auth_url, url_link_text = check_auth(self.request.uri)
-        trend_streams = Stream.query().order(Stream.views).fetch(3)
+ #       top_three = []
+        all_streams = Stream.query().order(Stream.views).fetch()
+        mycmp = lambda x,y: (len(y.media_items) - len(x.media_items))
+        all_streams.sort(mycmp)
+        size = 3 if (len(all_streams) -3) > 0 else len(all_streams)
+ #       for i in range(size):
+ #           top_three.append(all_streams[i])
+
+        checked = [""] * 4
+        cur_rate = REPORT_RATE_MINUTES;
+
+        if cur_rate:
+            if cur_rate == '0':
+                checked[0] = "checked=checked"
+            elif cur_rate == '5':
+                checked[1] = "checked=checked"
+            if cur_rate == '60':
+                checked[2] = "checked=checked"
+            elif cur_rate == '1440':
+                checked[3] = "checked=checked"
+        else:
+            checked[0] = "checked=checked"
+
         template_values = {
             'navigation': NAV_LINKS,
             'user': current_user,
             'page_title': "connexus",
             'page_header': "Connex.us",
-            'top_streams':trend_streams,
-            'auth_url': auth_url,
-            'url_link_text': url_link_text,
+            'top_streams': all_streams[:size],
+            'checked': checked
         }
         template = JINJA_ENVIRONMENT.get_template('trending_stream.html')
         self.response.write(template.render(template_values))
-        
+
+        def post(self):
+            rate = self.request.get('rate')
+            global REPORT_RATE_MINUTES
+            REPORT_RATE_MINUTES =rate
+            self.redirect('/trending')
 # [END TrendingPage]
+
+# [START SendReport]
+class SendReport(webapp2.RequestHandler):
+        def get(self):
+            print "CURRENT RATE:: ", REPORT_RATE_MINUTES
+            if REPORT_RATE_MINUTES == '0':
+                return
+
+            global LAST_REPORT
+            if not LAST_REPORT:
+                LAST_REPORT = datetime.now()
+                return
+
+            delta = (datetime.now() - LAST_REPORT).seconds
+            if delta < int(REPORT_RATE_MINUTES) * 60:
+                return
+            LAST_REPORT = datetime.now()
+
+            #Send Trending Info
+            top_three = []
+            all_streams = Stream.query.fetch()
+            mycmp = lambda x,y: (len(y.media_items) - len(x.media_items))
+            all_streams.sort(mycmp)
+            size = 3 if (len(all_streams) -3) > 0 else len(all_streams)
+
+            for i, stream in enumerate(all_streams[:size]):
+                body += "%d. %s %s" % (i + 1, stream.stream_name,
+                                       "http://apt-black-app.appspot" +
+                                       ".com?stream_name=%s" %
+                                       stream.name + "&increment=1\n")
+            #TODO: change sender email after testing and put TA's email= ee382vta@gmail.com   
+            mail.send_mail(sender="Carmina Francia <carmina.francia@utexas.edu>",
+                           to="<carminafrancia32@gmail.com>",
+                           subject="APT-BLACK Trending Report",
+                           body=body)
+            return
+
+# [END SendReport]         
+
+# [START ErrorPage]
+class ErrorPage(webapp2.RequestHandler):
+
+    def get(self):
+        template = JINJA_ENVIRONMENT.get_template('error.html')
+        self.response.write(template.render())
+# [END ErrorPage]
 
 # [START SocialPage]
 class SocialPage(webapp2.RequestHandler):
@@ -454,23 +522,10 @@ class SocialPage(webapp2.RequestHandler):
             'user': current_user,
             'page_title': "connexus",
             'page_header': "Connex.us",
-            'auth_url': auth_url,
-            'url_link_text': url_link_text,
         }
         
         template = JINJA_ENVIRONMENT.get_template('social.html')
         self.response.write(template.render(template_values))
-# [END SocialPage]
-
-# [START ErrorPage]
-class ErrorPage(webapp2.RequestHandler):
-
-    def get(self):
-        template = JINJA_ENVIRONMENT.get_template('error.html')
-        self.response.write(template.render())
-# [END ErrorPage]
-
-
 
 # [START app]
 app = webapp2.WSGIApplication([
@@ -488,5 +543,6 @@ app = webapp2.WSGIApplication([
     ('/trending',TrendingPage),
     ('/social',SocialPage),
     ('/error',ErrorPage),
+    ('/report', SendReport),
 ], debug=True)
 # [END app]
