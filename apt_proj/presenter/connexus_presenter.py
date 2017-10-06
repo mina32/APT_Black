@@ -343,6 +343,8 @@ class ViewAllPage(webapp2.RequestHandler):
                 'page_title': "connexus",
                 'page_header': "Connex.us",
                 'streams': all_streams,
+                'auth_url': auth_url,
+                'url_link_text': url_link_text,
             }
             template = JINJA_ENVIRONMENT.get_template('view_all_streams.html')
             self.response.write(template.render(template_values))
