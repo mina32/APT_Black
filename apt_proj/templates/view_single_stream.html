@@ -39,7 +39,11 @@
         <div class="row">
             <div class="col-9">
                 {% for i in range(0,length) %}
-                    <img class="media-inline" id="media-{{ i }}" src="{{media_items[i].content_url}}">
+                    <div class="col-3">
+                        <div class="stream-logo">
+                            <img class="stream-logo-img" id="media-{{ i }}" src="{{media_items[i].content_url}}">
+                        </div>
+                    </div>
                 {% endfor %}
             </div>
             <div class="col-3">
