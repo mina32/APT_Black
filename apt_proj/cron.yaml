@@ -6,4 +6,7 @@ cron:
 - description: update trending report
   url: /trending
   schedule: every 5 minutes
-  
+
+- description: update leaderboard scores
+  url: /leaderboard_calc
+  schedule: every 5 minutes

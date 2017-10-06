@@ -32,6 +32,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 
 REPORT_RATE_MINUTES = "0"
 LAST_REPORT = None
+SECS_PER_HOUR = 3600
 
 NAV_LINKS = [
     {"label": "Manage", "link": "/manage"},
@@ -426,13 +427,10 @@ class SearchPage(webapp2.RequestHandler):
 class TrendingPage(webapp2.RequestHandler):
     def get(self):
         current_user, auth_url, url_link_text = check_auth(self.request.uri)
- #       top_three = []
-        all_streams = Stream.query().order(Stream.views).fetch()
-        mycmp = lambda x,y: (len(y.media_items) - len(x.media_items))
-        all_streams.sort(mycmp)
-        size = 3 if (len(all_streams) -3) > 0 else len(all_streams)
- #       for i in range(size):
- #           top_three.append(all_streams[i])
+        all_streams = Stream.query().order(Stream.recent_views).fetch()
+        sorted_streams = sorted(all_streams, key=lambda s: len(s.recent_views),
+                                reverse=True)
+        size = 3 if (len(sorted_streams) -3) > 0 else len(sorted_streams)
 
         checked = [""] * 4
         cur_rate = REPORT_RATE_MINUTES;
@@ -454,7 +452,7 @@ class TrendingPage(webapp2.RequestHandler):
             'user': current_user,
             'page_title': "connexus",
             'page_header': "Connex.us",
-            'top_streams': all_streams[:size],
+            'top_streams': sorted_streams[:size],
             'checked': checked
         }
         template = JINJA_ENVIRONMENT.get_template('trending_stream.html')
@@ -467,6 +465,16 @@ class TrendingPage(webapp2.RequestHandler):
             self.redirect('/trending')
 # [END TrendingPage]
 
+# [START LeaderboadrCalc]
+class LeaderboardCalc(webapp2.RequestHandler):
+    def get(self):
+        streams = Stream.query().fetch()
+        now = datetime.datetime.now()
+        for stream in streams:
+            stream.recent_views = filter(lambda v: (now - rv).seconds < SECS_PER_HOUR,
+                                         stream.recent_views)
+            stream.put()
+            
 # [START SendReport]
 class SendReport(webapp2.RequestHandler):
         def get(self):
@@ -493,9 +501,9 @@ class SendReport(webapp2.RequestHandler):
 
             for i, stream in enumerate(all_streams[:size]):
                 body += "%d. %s %s" % (i + 1, stream.stream_name,
-                                       "http://apt-black-app.appspot" +
-                                       ".com?stream_name=%s" %
-                                       stream.name + "&increment=1\n")
+                                       "http://apt-black-app.appspot.com " +
+                                       "Trending Stream: " %
+                                       stream.stream_name + "&increment=1\n")
             #TODO: change sender email after testing and put TA's email= ee382vta@gmail.com   
             mail.send_mail(sender="Carmina Francia <carmina.francia@utexas.edu>",
                            to="<carminafrancia32@gmail.com>",
@@ -544,5 +552,6 @@ app = webapp2.WSGIApplication([
     ('/social',SocialPage),
     ('/error',ErrorPage),
     ('/report', SendReport),
+    ('/leaderboard_calc', LeaderboardCalc),   
 ], debug=True)
 # [END app]

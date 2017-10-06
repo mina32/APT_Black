@@ -15,12 +15,12 @@
   <tr>
         {% for stream in streams %}
         <td class="col1" style="padding-left:10px">
-          <a href="/view_single?stream_id={{stream.stream_name}}">
-            <img src="{{stream.cover_image}}" style="max-height:100%; max-width:100%"/>
+          <a href="/view/{{ stream.key.urlsafe() }}">
+            <img class="stream-logo-img" src="{{ stream.cover_image }}" style="max-height:100%; max-width:100%"/>
           </a>
           <h3>{{ stream.stream_name }}</h3>
-          {% if stream.views %}
-          <p>{{stream.views}} views in past hour</p>
+          {% if stream.recent_views %}
+          <p>{{stream.recent_views}} views in past hour</p>
           {% endif %}
         </td>
         {% endfor %}

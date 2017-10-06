@@ -57,6 +57,7 @@ class Stream(ndb.Model):
     views = ndb.IntegerProperty()
     date_created = ndb.DateTimeProperty(auto_now_add=True)
     date_last_updated = ndb.DateTimeProperty(auto_now=True)
+    recent_views = ndb.DateTimeProperty(indexed=False,repeated=True)
 
    # [END Stream]
 
