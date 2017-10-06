@@ -62,7 +62,6 @@ def check_auth(uri):
 class Auth(webapp2.RequestHandler):
 
     def get(self):
-        logging.info("-------------------")
         submit_url = "/manage"
         current_user, auth_url, url_link_text = check_auth(self.request.uri)
 
@@ -101,10 +100,9 @@ class Auth(webapp2.RequestHandler):
         current_user, auth_url, url_link_text = check_auth(self.request.uri)
 
         tp = users.User(self.request.get("userEmail"))
-        logging.info(tp.user_id())
         # TODO Use this userEmail and Password to sign in
-        logging.info(self.request.get("userEmail"))
-        logging.info(self.request.get("userPassword"))
+        # logging.info(self.request.get("userEmail"))
+        # logging.info(self.request.get("userPassword"))
 
         template_values = {
             'navigation': NAV_LINKS,
@@ -195,7 +193,7 @@ class CreatePage(webapp2.RequestHandler):
         s_key = s.put()
         #Subscriber Emails
         for e in subscriber_emails:
-            mail.send_mail(sender=app_identity.get_application_id() + "@appspot.gserviceaccount.com",
+            mail.send_mail(sender=u_email,
                 to="<" + e + ">",
                 subject="New subscription alert",
                 body="You have been added as a subscriber to the stream at " + 
@@ -260,7 +258,6 @@ class DeleteStream(webapp2.RequestHandler):
         list_of_key_strings = self.request.get_all("del")
         for k in list_of_key_strings:
              search.Index('api-stream').delete(ndb.Key(Stream, int(k)).urlsafe())
-        #logging.info([ndb.Key(Stream, k) for k in list_of_key_strings])
         ndb.delete_multi([ndb.Key(Stream, int(k)) for k in list_of_key_strings])
         #XXX: We should not hard-code sleep time
         time.sleep(1)
@@ -299,10 +296,8 @@ class UnsubscribeStream(webapp2.RequestHandler):
         current_person = Person(
             email=current_user.email()
         )
-        logging.info(list_of_entities)
         for e in list_of_entities:
             e.subscribers.remove(current_person)
-        logging.info(list_of_entities)
         ndb.put_multi(list_of_entities)
         #XXX: We should not hard-code sleep time
         time.sleep(1)
@@ -411,18 +406,10 @@ class SearchPage(webapp2.RequestHandler):
         current_user, auth_url, url_link_text = check_auth(self.request.uri)
         search_results = []
         query_string = self.request.get('query')
-        logging.info(query_string)
         query = search.Query(query_string=query_string) #, options=options)
-        logging.info(pprint(search.Index('api-stream')))
         search_results = search.Index('api-stream').search(query)
-        logging.info(pprint(search_results))
         search_result_keys = [d.doc_id for d in search_results.results]
         search_result_objs = [ndb.Key(urlsafe=k).get() for k in search_result_keys]
-
-        logging.info("------------------------------------------")
-        logging.info(pprint(search_result_objs))
-        logging.info(pprint(search_results))
-
 
         template_values = {
             'navigation': NAV_LINKS,
