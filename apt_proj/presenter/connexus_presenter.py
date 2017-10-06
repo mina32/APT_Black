@@ -437,7 +437,7 @@ class TrendingPage(webapp2.RequestHandler):
         current_user, auth_url, url_link_text = check_auth(self.request.uri)
         
         all_streams = Stream.query().fetch()
-        sorted_streams = sorted(all_streams, key=lambda s: len(s.views),
+        sorted_streams = sorted(all_streams, key=lambda s: s.recent_views,
                                 reverse=True)
         size = 3 
         if (len(sorted_streams) < 3):
@@ -510,7 +510,7 @@ class SendReport(webapp2.RequestHandler):
 
         #Send Trending Info
         all_streams = Stream.query.fetch()
-        sorted_streams = sorted(all_streams, key=lambda s: len(s.views),
+        sorted_streams = sorted(all_streams, key=lambda s: s.views,
                                 reverse=True)
         size = 3
         if (len(sorted_streams) < 3):
