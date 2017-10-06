@@ -21,6 +21,7 @@ try:
     from models.image_store import ImageStore
     from google.appengine.api import app_identity
     from google.appengine.api import mail
+    from datetime import datetime
 except ImportError:
     raise("Import Error")
 
@@ -318,6 +319,9 @@ class ViewSinglePage(webapp2.RequestHandler):
             stream_key = ndb.Key(urlsafe=stream_key_str)
             stream_obj = stream_key.get()
             stream_obj.views = stream_obj.views + 1
+            while len(stream_obj.recent_views) > 0 and (datetime.now() - stream_obj.recent_views[0]).seconds > 3600:
+                del stream_obj.recent_views[0]
+            stream_obj.recent_views.append(datetime.now())
             stream_obj.put()
 
             media_items = stream_obj.media_items
@@ -397,8 +401,6 @@ class PostMedia(blobstore_handlers.BlobstoreUploadHandler):
             self.error(500)
 # [END PostMedia]
 
-# [START ViewAllPage]
-# [END ViewAllPage]
 
 # [START SearchPage]
 class SearchPage(webapp2.RequestHandler):
@@ -435,14 +437,14 @@ class TrendingPage(webapp2.RequestHandler):
         current_user, auth_url, url_link_text = check_auth(self.request.uri)
         
         all_streams = Stream.query().fetch()
-        sorted_streams = sorted(all_streams, key=lambda s: len(s.recent_views),
+        sorted_streams = sorted(all_streams, key=lambda s: len(s.views),
                                 reverse=True)
         size = 3 
         if (len(sorted_streams) < 3):
             size = len(sorted_streams)
 
         checked = [""] * 4
-        cur_rate = REPORT_RATE_MINUTES;
+        cur_rate = REPORT_RATE_MINUTES
 
         if cur_rate:
             if cur_rate == '0':
@@ -508,18 +510,18 @@ class SendReport(webapp2.RequestHandler):
 
         #Send Trending Info
         all_streams = Stream.query.fetch()
-        sorted_streams = sorted(all_streams, key=lambda s: len(s.recent_views),
+        sorted_streams = sorted(all_streams, key=lambda s: len(s.views),
                                 reverse=True)
-        size = 3 if (len(all_streams) -3) > 0 else len(all_streams)
+        size = 3
+        if (len(sorted_streams) < 3):
+            size = len(sorted_streams)
 
         for i, stream in enumerate(all_streams[:size]):
             body += "%d. %s %s" % (i + 1, stream.stream_name,
-                                    "http://apt-black-app.appspot.com " +
-                                    "Trending Stream: " %
-                                    stream.stream_name + "&increment=1\n")
-            #TODO: change sender email after testing and put TA's email= ee382vta@gmail.com   
+                                    "from http://apt-black-app.appspot.com ")
+
         mail.send_mail(sender=current_user.email(),
-                        to="<cee382vta@gmail.com>",
+                        to="<ee382vta@gmail.com>",
                         subject="APT-BLACK Trending Report",
                         body=body)
         return
