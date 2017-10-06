@@ -390,7 +390,7 @@ class PostMedia(blobstore_handlers.BlobstoreUploadHandler):
 class SearchPage(webapp2.RequestHandler):
     #in progress... 
     def get(self):
-        current_user = users.get_current_user()
+        current_user, auth_url, url_link_text = check_auth(self.request.uri)
         search_results = []
         query_string = self.request.get('query')
         logging.info(query_string)
@@ -414,6 +414,8 @@ class SearchPage(webapp2.RequestHandler):
             'query': self.request.get('query'),
             'search_results': search_result_objs,
             'results_length': len(search_result_objs),
+            'auth_url': auth_url,
+            'url_link_text': url_link_text,
         }
         template = JINJA_ENVIRONMENT.get_template('search_streams.html')
         self.response.write(template.render(template_values))
@@ -421,7 +423,7 @@ class SearchPage(webapp2.RequestHandler):
 
 # [START TrendingPage]
 class TrendingPage(webapp2.RequestHandler):
-    #in progress... need to get images/stream
+    # in progress... need to get images/stream
     def get(self):
         current_user, auth_url, url_link_text = check_auth(self.request.uri)
         trend_streams = Stream.query().order(Stream.views).fetch(3)
@@ -430,7 +432,7 @@ class TrendingPage(webapp2.RequestHandler):
             'user': current_user,
             'page_title': "connexus",
             'page_header': "Connex.us",
-            'top_streams':trend_streams,
+            'top_streams': trend_streams,
             'auth_url': auth_url,
             'url_link_text': url_link_text,
         }
@@ -438,6 +440,23 @@ class TrendingPage(webapp2.RequestHandler):
         self.response.write(template.render(template_values))
         
 # [END TrendingPage]
+
+# [START SocialPage]
+class SocialPage(webapp2.RequestHandler):
+    # in progress... need to get images/stream
+    def get(self):
+        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+        template_values = {
+            'navigation': NAV_LINKS,
+            'user': current_user,
+            'page_title': "connexus",
+            'page_header': "Connex.us",
+            'auth_url': auth_url,
+            'url_link_text': url_link_text,
+        }
+        template = JINJA_ENVIRONMENT.get_template('social.html')
+        self.response.write(template.render(template_values))
+# [END SocialPage]
 
 # [START ErrorPage]
 class ErrorPage(webapp2.RequestHandler):
@@ -458,11 +477,12 @@ app = webapp2.WSGIApplication([
     ('/delete_stream', DeleteStream),
     ('/unsub_stream', UnsubscribeStream),
     ('/sub_stream/(.+)', SubscribeStream),
-    ('/view/(.+)',ViewSinglePage),
+    ('/view/(.+)', ViewSinglePage),
     ('/post_media/(.+)', PostMedia),
     ('/search', SearchPage),
-    ('/view',ViewAllPage),
-    ('/trending',TrendingPage),
+    ('/view', ViewAllPage),
+    ('/trending', TrendingPage),
+    ('/social',SocialPage),
     ('/error',ErrorPage),
 ], debug=True)
 # [END app]
