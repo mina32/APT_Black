@@ -323,6 +323,7 @@ class ViewSinglePage(webapp2.RequestHandler):
                 'stream_key': stream_key_str,
                 'stream_obj': stream_obj,
                 'media_items': media_items,
+                'length': len(media_items),
                 'auth_url': auth_url,
                 'url_link_text': url_link_text,
             }
