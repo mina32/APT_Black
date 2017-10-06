@@ -321,6 +321,7 @@ class ViewSinglePage(webapp2.RequestHandler):
             stream_obj.put()
 
             media_items = stream_obj.media_items
+            length = len(media_items)
             template_values = {
                 'navigation': NAV_LINKS,
                 'user': current_user,
@@ -329,7 +330,7 @@ class ViewSinglePage(webapp2.RequestHandler):
                 'stream_key': stream_key_str,
                 'stream_obj': stream_obj,
                 'media_items': media_items,
-                'length': len(media_items),
+                'length': length,
                 'auth_url': auth_url,
                 'url_link_text': url_link_text,
             }
@@ -428,8 +429,11 @@ class SearchPage(webapp2.RequestHandler):
 
 # [START TrendingPage]
 class TrendingPage(webapp2.RequestHandler):
+
     def get(self):
+        
         current_user, auth_url, url_link_text = check_auth(self.request.uri)
+        
         all_streams = Stream.query().order(Stream.recent_views).fetch()
         sorted_streams = sorted(all_streams, key=lambda s: len(s.recent_views),
                                 reverse=True)
@@ -463,58 +467,60 @@ class TrendingPage(webapp2.RequestHandler):
         template = JINJA_ENVIRONMENT.get_template('trending_stream.html')
         self.response.write(template.render(template_values))
 
-        def post(self):
-            rate = self.request.get('rate')
-            global REPORT_RATE_MINUTES
-            REPORT_RATE_MINUTES =rate
-            self.redirect('/trending')
+    def post(self):
+        rate = self.request.get('rate')
+        global REPORT_RATE_MINUTES
+        REPORT_RATE_MINUTES =rate
+        self.redirect('/trending')
 # [END TrendingPage]
 
 # [START LeaderboadrCalc]
 class LeaderboardCalc(webapp2.RequestHandler):
+
     def get(self):
         streams = Stream.query().fetch()
         now = datetime.datetime.now()
         for stream in streams:
-            stream.recent_views = filter(lambda v: (now - rv).seconds < SECS_PER_HOUR,
+            stream.recent_views = filter(lambda v: (now - v).seconds < SECS_PER_HOUR,
                                          stream.recent_views)
             stream.put()
             
 # [START SendReport]
 class SendReport(webapp2.RequestHandler):
-        def get(self):
-            print "CURRENT RATE:: ", REPORT_RATE_MINUTES
-            if REPORT_RATE_MINUTES == '0':
-                return
 
-            global LAST_REPORT
-            if not LAST_REPORT:
-                LAST_REPORT = datetime.now()
-                return
+    def get(self):
+        current_user, auth_url, url_link_text = check_auth(self.request.uri)
 
-            delta = (datetime.now() - LAST_REPORT).seconds
-            if delta < int(REPORT_RATE_MINUTES) * 60:
-                return
-            LAST_REPORT = datetime.now()
-
-            #Send Trending Info
-            top_three = []
-            all_streams = Stream.query.fetch()
-            mycmp = lambda x,y: (len(y.media_items) - len(x.media_items))
-            all_streams.sort(mycmp)
-            size = 3 if (len(all_streams) -3) > 0 else len(all_streams)
-
-            for i, stream in enumerate(all_streams[:size]):
-                body += "%d. %s %s" % (i + 1, stream.stream_name,
-                                       "http://apt-black-app.appspot.com " +
-                                       "Trending Stream: " %
-                                       stream.stream_name + "&increment=1\n")
-            #TODO: change sender email after testing and put TA's email= ee382vta@gmail.com   
-            mail.send_mail(sender="Carmina Francia <carmina.francia@utexas.edu>",
-                           to="<carminafrancia32@gmail.com>",
-                           subject="APT-BLACK Trending Report",
-                           body=body)
+        if REPORT_RATE_MINUTES == '0':
             return
+
+        global LAST_REPORT
+        if not LAST_REPORT:
+            LAST_REPORT = datetime.now()
+            return
+
+        delta = (datetime.now() - LAST_REPORT).seconds
+        if delta < int(REPORT_RATE_MINUTES) * 60:
+            return
+        LAST_REPORT = datetime.now()
+
+        #Send Trending Info
+        all_streams = Stream.query.fetch()
+        sorted_streams = sorted(all_streams, key=lambda s: len(s.recent_views),
+                                reverse=True)
+        size = 3 if (len(all_streams) -3) > 0 else len(all_streams)
+
+        for i, stream in enumerate(all_streams[:size]):
+            body += "%d. %s %s" % (i + 1, stream.stream_name,
+                                    "http://apt-black-app.appspot.com " +
+                                    "Trending Stream: " %
+                                    stream.stream_name + "&increment=1\n")
+            #TODO: change sender email after testing and put TA's email= ee382vta@gmail.com   
+        mail.send_mail(sender=current_user.email(),
+                        to="<cee382vta@gmail.com>",
+                        subject="APT-BLACK Trending Report",
+                        body=body)
+        return
 
 # [END SendReport]         
 
@@ -528,8 +534,14 @@ class ErrorPage(webapp2.RequestHandler):
 
 # [START SocialPage]
 class SocialPage(webapp2.RequestHandler):
+    
     def get(self):
         current_user, auth_url, url_link_text = check_auth(self.request.uri)
+
+        if current_user is None:
+            self.redirect("/auth")
+            return
+        
         template_values = {
             'navigation': NAV_LINKS,
             'user': current_user,
@@ -541,6 +553,7 @@ class SocialPage(webapp2.RequestHandler):
         
         template = JINJA_ENVIRONMENT.get_template('social.html')
         self.response.write(template.render(template_values))
+# [END SocialPage]
 
 # [START app]
 app = webapp2.WSGIApplication([
