@@ -11,19 +11,21 @@
 </head>
 <h3>Top 3 trending streams</h3>
 
-<table class="tbl" id="streams">
-  <tr>
-        {% for stream in streams %}
-        <td class="col1" style="padding-left:10px">
-          <a href="/view/{{ stream.key.urlsafe() }}">
-            <img class="stream-logo-img" src="{{ stream.cover_image }}" style="max-height:100%; max-width:100%"/>
-          </a>
+  <div class="row">
+        {% for stream in top_streams %}
+        <div class="col-3">
+          <div class="stream-logo">
+              <a href="/view/{{ stream.key.urlsafe() }}">
+                  <img class="stream-logo-img" src="{{ stream.cover_image }}" alt="" >
+                  <p class="stream-logo-text">{{ stream.stream_name }}</p> 
+              </a>
+          </div>
           <h3>{{ stream.stream_name }}</h3>
-          <p>{{stream.recent_views}} views in past hour</p>
-        </td>
+          <p>{{ stream.recent_views|length }} views in past hour</p>
+        </div>
         {% endfor %}
 
-    <td class="col2" style="padding-left:30px">
+    <div class="col-3" >
       <form action="/trending" method="post">
         <input type="radio" name="rate" value="0" {{ checked[0] }}>No reports<br>
         <input type="radio" name="rate" value="5" {{ checked[1] }}>Every 5 minutes<br>
@@ -34,8 +36,7 @@
           <input type="submit" value="Update Rate">
         </p>
       </form>
-    </td>
-  </tr>
-</table>
+    </div>
+  </div>
 
 {% endblock %}

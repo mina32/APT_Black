@@ -434,10 +434,12 @@ class TrendingPage(webapp2.RequestHandler):
         
         current_user, auth_url, url_link_text = check_auth(self.request.uri)
         
-        all_streams = Stream.query().order(Stream.recent_views).fetch()
+        all_streams = Stream.query().fetch()
         sorted_streams = sorted(all_streams, key=lambda s: len(s.recent_views),
                                 reverse=True)
-        size = 3 if (len(sorted_streams) -3) > 0 else len(sorted_streams)
+        size = 3 
+        if (len(sorted_streams) < 3):
+            size = len(sorted_streams)
 
         checked = [""] * 4
         cur_rate = REPORT_RATE_MINUTES;
