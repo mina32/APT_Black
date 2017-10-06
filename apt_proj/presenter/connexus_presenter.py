@@ -346,6 +346,8 @@ class ViewAllPage(webapp2.RequestHandler):
                 'page_title': "connexus",
                 'page_header': "Connex.us",
                 'streams': all_streams,
+                'auth_url': auth_url,
+                'url_link_text': url_link_text,
             }
             template = JINJA_ENVIRONMENT.get_template('view_all_streams.html')
             self.response.write(template.render(template_values))
@@ -395,7 +397,7 @@ class PostMedia(blobstore_handlers.BlobstoreUploadHandler):
 class SearchPage(webapp2.RequestHandler):
     #in progress... 
     def get(self):
-        current_user = users.get_current_user()
+        current_user, auth_url, url_link_text = check_auth(self.request.uri)
         search_results = []
         query_string = self.request.get('query')
         logging.info(query_string)
@@ -419,6 +421,8 @@ class SearchPage(webapp2.RequestHandler):
             'query': self.request.get('query'),
             'search_results': search_result_objs,
             'results_length': len(search_result_objs),
+            'auth_url': auth_url,
+            'url_link_text': url_link_text,
         }
         template = JINJA_ENVIRONMENT.get_template('search_streams.html')
         self.response.write(template.render(template_values))
@@ -454,7 +458,9 @@ class TrendingPage(webapp2.RequestHandler):
             'page_title': "connexus",
             'page_header': "Connex.us",
             'top_streams': sorted_streams[:size],
-            'checked': checked
+            'checked': checked,
+            'auth_url': auth_url,
+            'url_link_text': url_link_text,
         }
         template = JINJA_ENVIRONMENT.get_template('trending_stream.html')
         self.response.write(template.render(template_values))
@@ -531,6 +537,8 @@ class SocialPage(webapp2.RequestHandler):
             'user': current_user,
             'page_title': "connexus",
             'page_header': "Connex.us",
+            'auth_url': auth_url,
+            'url_link_text': url_link_text,
         }
         
         template = JINJA_ENVIRONMENT.get_template('social.html')
