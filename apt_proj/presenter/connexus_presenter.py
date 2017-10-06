@@ -311,6 +311,7 @@ class ViewSinglePage(webapp2.RequestHandler):
             stream_obj.put()
 
             media_items = stream_obj.media_items
+            length = len(media_items)
             template_values = {
                 'navigation': NAV_LINKS,
                 'user': current_user,
@@ -319,6 +320,7 @@ class ViewSinglePage(webapp2.RequestHandler):
                 'stream_key': stream_key_str,
                 'stream_obj': stream_obj,
                 'media_items': media_items,
+                'length': length,
                 'auth_url': auth_url,
                 'url_link_text': url_link_text,
             }
