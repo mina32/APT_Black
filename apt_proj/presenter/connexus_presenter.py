@@ -447,7 +447,19 @@ class ErrorPage(webapp2.RequestHandler):
         self.response.write(template.render())
 # [END ErrorPage]
 
-
+# [START SocialPage]
+class SocialPage(webapp2.RequestHandler):
+    def get(self):
+        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+        template_values = {
+            'navigation': NAV_LINKS,
+            'user': current_user,
+            'page_title': "connexus",
+            'page_header': "Connex.us",
+        }
+        
+        template = JINJA_ENVIRONMENT.get_template('social.html')
+        self.response.write(template.render(template_values))
 
 # [START app]
 app = webapp2.WSGIApplication([
@@ -463,6 +475,7 @@ app = webapp2.WSGIApplication([
     ('/search', SearchPage),
     ('/view',ViewAllPage),
     ('/trending',TrendingPage),
+    ('/social',SocialPage),
     ('/error',ErrorPage),
 ], debug=True)
 # [END app]
