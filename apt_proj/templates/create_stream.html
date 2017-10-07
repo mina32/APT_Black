@@ -4,32 +4,33 @@
     <form action="/create" method="post">
         <div class="row create">
             <div class="col-6" align="left">
-                <input name="stream_name" type="text" required />
-                <br>
-                {{ stream_name_label }}
-                <br>
-                <br>
-                <input name="subscribers" type="email" multiple />
-                <br>
-                <input name="subscribers_msg" type="text" placeholder="Optional message for invite" />
-                <br>
-                {{ subscriber_label }}
-                <br><br>
-                <button type="submit">
-                    {{ submit_label }}
-                </button>
+                <div class="form-group">
+                    <label>{{ stream_name_label }}</label>
+                    <input name="stream_name" type="text" required class="form-control"  />
+                </div>
+                <div class="form-group">
+                    <label>{{ subscriber_label }}</label>
+                    <input name="subscribers" type="email" multiple class="form-control"  />
+                    <input name="subscribers_msg" type="text" placeholder="Optional message for invite" class="form-control"  />
+                </div> 
             </div>
             <div class="col-6" align="left">
-                <input name="tags" type="text" />
-                <br>
-                {{ tag_label }}
-                <br><br>
-                <input name="cover_image" type="url" />
-                <br>
-                {{ cover_image_label }}
+                <div class="form-group">
+                    <label>{{ tag_label }}</label>
+                    <input name="tags" type="text" class="form-control"  />
+                </div>
+                <div class="form-group">
+                    <label>{{ cover_image_label }}</label>
+                    <input name="cover_image" type="url" class="form-control"  />
+                </div>
             </div>
-
-
+            <div class="col-12">
+                <center>
+                    <button type="submit" class="btn btn-primary">
+                        {{ submit_label }}
+                    </button>
+                </center>
+            </div>
         </div>
 
 
