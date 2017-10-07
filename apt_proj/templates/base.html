@@ -14,13 +14,19 @@
     <style type="text/css">
 
         #divBody {
-            width: 60%;
+            width: 85%;
             padding: 10px;
             margin: auto;
             max-width:800;
-            border: 3px solid #000000;
+            border: 0px solid lightgrey;
             padding-top: 30px;
             padding-bottom: 30px;
+        }
+
+        .container {
+            border: 2px solid lightgrey;
+            border-radius: 5px;
+            padding: 10px;
         }
 
         blockquote {
@@ -39,18 +45,11 @@
             padding: 7px 9px;
         }
 
-        .btn {
-            text-align: right;
-        }
-
         .row {
             margin-left: 0px;
             margin-top: 10px;
         }
 
-        #sep{
-            border-right: 1px solid #000;
-        }
         .create input {
             width: 85%;
         }
@@ -84,35 +83,34 @@
 </head>
 
 <body>
-    <div id="divBody">
-        <div class="container">
-            <h1>{{ page_header }}</h1>
-        </div>
-
-        <div class="container">
-            <ul class="nav" >
+        <nav class="navbar navbar-toggleable-md navbar-inverse bg-inverse">
+            <a class="navbar-brand" href="/">{{ page_header }}</a>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
                 {% for item in navigation %}
                     {% if item['active'] %}
-                        <li class="nav-item">
+                        <li class="nav-item active">
                             <a class="nav-link" href="{{ item['link'] }}" id="sep">
                                 {{ item['label'] }}
                             </a>
                         </li>
                     {% else %}
-                        <li class="nav-item active" id="liFIt">
+                        <li class="nav-item" id="liFIt">
                             <a class="nav-link" href="{{ item['link'] }}" id="sep">
                                 {{ item['label'] }}
                             </a>
                         </li>
                     {% endif %}
                 {% endfor %}
-                        <li>
-                            <a href="{{ auth_url }}" class="btn">{{ url_link_text }}</a>
-                        </li>
-            </ul>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ auth_url }}">{{ url_link_text }}</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <div id="divBody">
             {% block content %}
             {% endblock %}
         </div>
-    </div>
 </body>
 </html>
