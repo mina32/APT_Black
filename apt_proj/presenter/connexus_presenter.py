@@ -218,11 +218,15 @@ class CreatePage(webapp2.RequestHandler):
         search_strings = s.stream_name + " " + s.tags.replace(","," ")
         search_strings_list = search_strings.split()
         for search_str in search_strings_list:
-            search_string = SearchableString(
-                search_tag = search_str.lower()
+            matching_query = SearchableString.query(
+            SearchableString.search_tag == search_str,
             )
-            search_string.put()
-
+            matches = matching_query.fetch(1)
+            if (len(matches) == 0):
+                search_string = SearchableString(
+                    search_tag = search_str.lower()
+                )
+                search_string.put()
         self.redirect('/manage')
 # [END CreatePage]
 
@@ -449,9 +453,6 @@ class SearchOptions(webapp2.RequestHandler):
             SearchableString.search_tag < query_limit,
         )
         matches = matching_query.fetch(20)
-        logging.info("\n\n\n")
-        logging.info(matches)
-        logging.info("\n\n\n")
         self.response.out.write(json.dumps([i.search_tag for i in matches]))
         #return matches
 

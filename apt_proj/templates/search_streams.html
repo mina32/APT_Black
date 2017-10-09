@@ -3,6 +3,7 @@
 {% block extra_head %}
 <script type="text/javascript">
 $(document).ready(function () {
+    var cache = {};
     $("#search-term").autocomplete({
         source: loadFromAjax,
         minLength: 1,
@@ -10,12 +11,16 @@ $(document).ready(function () {
     });
     
     function loadFromAjax(request, response) {
+        var term = request.term;
+        if ( term in cache ) {
+            response( cache[ term ] );
+            return;
+        }
         $.ajax({
             url: '/search_results?query=' + encodeURIComponent(request.term),
             dataType: 'json',
             success: function(data) {
-                console.log(data);
-                // you can format data here if necessary
+                cache[ term ] = data;
                 response(data);
             }
         });
