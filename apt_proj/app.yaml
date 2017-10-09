@@ -11,6 +11,9 @@ handlers:
 - url: /bootstrap
   static_dir: static/bootstrap
 
+- url: /jquery
+  static_dir: static/jquery
+
 - url: /.*
   script: presenter.connexus_presenter.app
 # [END handlers]

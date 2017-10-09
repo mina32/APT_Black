@@ -5,6 +5,7 @@ import os
 import urllib
 import logging
 import time
+import json
 
 import jinja2
 import webapp2
@@ -212,6 +213,16 @@ class CreatePage(webapp2.RequestHandler):
             add_result = search.Index('api-stream').put(d)
         except search.Error:
             logging.exception("Error adding document:")
+
+        # Now create SearchableString objects
+        search_strings = s.stream_name + " " + s.tags.replace(","," ")
+        search_strings_list = search_strings.split()
+        for search_str in search_strings_list:
+            search_string = SearchableString(
+                search_tag = search_str.lower()
+            )
+            search_string.put()
+
         self.redirect('/manage')
 # [END CreatePage]
 
@@ -404,7 +415,6 @@ class PostMedia(blobstore_handlers.BlobstoreUploadHandler):
 
 # [START SearchPage]
 class SearchPage(webapp2.RequestHandler):
-    #in progress... 
     def get(self):
         current_user, auth_url, url_link_text = check_auth(self.request.uri)
         search_results = []
@@ -428,6 +438,25 @@ class SearchPage(webapp2.RequestHandler):
         template = JINJA_ENVIRONMENT.get_template('search_streams.html')
         self.response.write(template.render(template_values))
 # [END SearchPage]
+
+# [START SearchOptions]
+class SearchOptions(webapp2.RequestHandler):
+    def get(self):
+        query_string = self.request.get('query').lower()
+        query_limit = query_string[:-1] + chr(ord(query_string[-1]) + 1)
+        matching_query = SearchableString.query(
+            SearchableString.search_tag >= query_string,
+            SearchableString.search_tag < query_limit,
+        )
+        matches = matching_query.fetch(20)
+        logging.info("\n\n\n")
+        logging.info(matches)
+        logging.info("\n\n\n")
+        self.response.out.write(json.dumps([i.search_tag for i in matches]))
+        #return matches
+
+# [END SearchOptions]
+
 
 # [START TrendingPage]
 class TrendingPage(webapp2.RequestHandler):
@@ -571,6 +600,7 @@ app = webapp2.WSGIApplication([
     ('/view/(.+)',ViewSinglePage),
     ('/post_media/(.+)', PostMedia),
     ('/search', SearchPage),
+    ('/search_results', SearchOptions),
     ('/view',ViewAllPage),
     ('/trending',TrendingPage),
     ('/social',SocialPage),

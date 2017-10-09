@@ -59,7 +59,8 @@ class Stream(ndb.Model):
     date_last_updated = ndb.DateTimeProperty(auto_now=True)
     recent_views = ndb.DateTimeProperty(indexed=False,repeated=True)
 
-   # [END Stream]
+# [END Stream]
 
-
+class SearchableString(ndb.Model):
+    search_tag = ndb.StringProperty()
 

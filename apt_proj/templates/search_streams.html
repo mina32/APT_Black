@@ -1,11 +1,34 @@
 {% extends "base.html" %}
 
+{% block extra_head %}
+<script type="text/javascript">
+$(document).ready(function () {
+    $("#search-term").autocomplete({
+        source: loadFromAjax,
+        minLength: 1,
+        //appendTo: "#search-results-div"
+    });
+    
+    function loadFromAjax(request, response) {
+        $.ajax({
+            url: '/search_results?query=' + encodeURIComponent(request.term),
+            dataType: 'json',
+            success: function(data) {
+                console.log(data);
+                // you can format data here if necessary
+                response(data);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+
 {% block content %}
     <h1>{{ query }}</h1>
     <p>{{ param }}</p>
     <form action="/search" method="get">
-        <input type="text" name="query">
-        <br>
+        <input id="search-term" type="text" name="query">
         <button type="submit">
             Search
         </button>
@@ -18,13 +41,13 @@
             click on an image to view stream
         </p>
     {% endif %}
-    <div class="search-results">
+    <div class="search-results" id="searc-results-div">
         {% for stream in search_results %}
             <div class="col-3">
                 <div class="stream-logo">
                     <a href="/view/{{ stream.key.urlsafe() }}">
                         <img class="stream-logo-img" src="{{ stream.cover_image }}" alt="" >
-                        <p class="stream-logo-text">{{ stream.stream_name }}</p> 
+                        <p class="stream-logo-text">{{ stream.stream_name }}</p>
                     </a>
                 </div>
             </div>
