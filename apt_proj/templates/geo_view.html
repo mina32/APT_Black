@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+
+{% block extra_head %}
+
+<script type="text/javascript">
+    var stream_images =  [{% for image in stream_obj.media_items%}{"date": new Date(Date.parse("{{image.date_uploaded}} UTC")),"url":"{{image.content_url|safe}}"}{% if not loop.last %},{% endif %}{% endfor %}];
+
+    function addImages(minDate, maxDate) {
+        var map = $('#map_canvas').gmap('get', 'map');
+        var bounds = map.getBounds();
+        var southWest = bounds.getSouthWest();
+        var northEast = bounds.getNorthEast();
+        var lngSpan = northEast.lng() - southWest.lng();
+        var latSpan = northEast.lat() - southWest.lat();
+        var images = stream_images.filter(function (image) {
+            return image.date >= minDate && image.date <= maxDate;
+        });
+        for ( var i = 0; i < images.length ; i++ ) {
+            var lat = southWest.lat() + latSpan * Math.random();
+            var lng = southWest.lng() + lngSpan * Math.random();
+            var url = images[i].url;
+            $('#map_canvas').gmap('addMarker', {
+                'position': new google.maps.LatLng(lat, lng)
+                }).mouseover((function (image_url) {
+                    return function() {
+                        $('#map_canvas').gmap('openInfoWindow',
+                            { content : '<img src="' + image_url +
+                            '" style="height: 100px; width: 100px;"/>' }, this);
+                        };
+                })(url));
+        }
+        $('#map_canvas').gmap('set', 'MarkerClusterer', new
+            MarkerClusterer($('#map_canvas').gmap('get', 'map'),
+            $('#map_canvas').gmap('get', 'markers')));
+    }
+
+    var rightNow = new Date();
+    var yearAgo = new Date(parseInt(rightNow.getFullYear()) - 1,
+                           rightNow.getMonth(), rightNow.getDate(), 
+                           rightNow.getHours(), rightNow.getMinutes(), 
+                           rightNow.getSeconds());
+
+    $('#map_canvas').gmap({'zoom': 2, 'disableDefaultUI':true}).bind('init', 
+                          function(evt, map) {
+
+    $( "#slider" ).dateRangeSlider({
+        bounds:{
+            min: yearAgo,
+            max: rightNow
+        },
+        defaultValues:{
+            min: yearAgo,
+            max: rightNow
+        }, step:{
+            days: 1
+        }, formatter: function(val){
+            var MONTH = ["Jan", "Feb", "Mar", "Apr", "May", "June", 
+                         "July", "August", "Sep", "Oct", "Nov", "Dec"];
+            var day = val.getDate(),
+                month = MONTH[val.getMonth()],
+                year = val.getFullYear();
+                return month + " " + day + ", " + year;
+            }
+        });
+
+      $("#slider").bind("valuesChanged", function(e, data){
+          $('#map_canvas').gmap('clear', 'markers');
+          var markerClusterer = $('#map_canvas').gmap('get', 'MarkerClusterer');
+          if (markerClusterer) {
+              markerClusterer.clearMarkers();
+          }
+          addImages(data.values.min, data.values.max);
+      });
+
+
+     });
+
+</script>
+{% endblock %}
+
+<link href="/bootstrap/css/iThing.css" rel="stylesheet">
+<script type="text/javascript" src="/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+<script type="text/javascript" src="/bootstrap/js/markerclusterer.min.js"></script>
+<script type="text/javascript" src="/bootstrap/js/jQDateRangeSlider-min.js"></script>
+
+
+
+{% block content %}
+<div class="row">
+    <div id="map_canvas"></div>
+    <div id="slider"></div>
+</div>
+
+{% endblock %}

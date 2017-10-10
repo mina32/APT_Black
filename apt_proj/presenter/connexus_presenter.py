@@ -589,6 +589,39 @@ class SocialPage(webapp2.RequestHandler):
         self.response.write(template.render(template_values))
 # [END SocialPage]
 
+class GeoView(webapp2.RequestHandler):
+
+    def get(self, stream_key_str):
+        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+
+        if current_user is None:
+            self.redirect("/auth")
+            return
+
+
+        stream_key = ndb.Key(urlsafe=stream_key_str)
+        stream_obj = stream_key.get()
+        stream_obj.views = stream_obj.views + 1
+        while len(stream_obj.recent_views) > 0 and (datetime.now() - stream_obj.recent_views[0]).seconds > 3600:
+            del stream_obj.recent_views[0]
+        stream_obj.recent_views.append(datetime.now())
+        stream_obj.put()
+
+        template_values = {
+            'navigation': NAV_LINKS,
+            'user': current_user,
+            'page_title': "connexus",
+            'page_header': "Connex.us",
+            'stream_key': stream_key_str,
+            'stream_obj': stream_obj,
+            'auth_url': auth_url,
+            'url_link_text': url_link_text,
+        }
+        template = JINJA_ENVIRONMENT.get_template('geo_view.html')
+        self.response.write(template.render(template_values))
+
+
+
 # [START app]
 app = webapp2.WSGIApplication([
     ('/', Auth),
@@ -607,6 +640,7 @@ app = webapp2.WSGIApplication([
     ('/social',SocialPage),
     ('/error',ErrorPage),
     ('/report', SendReport),
-    ('/leaderboard_calc', LeaderboardCalc),   
+    ('/leaderboard_calc', LeaderboardCalc),
+    ('/geo/(.+)', GeoView)
 ], debug=True)
 # [END app]
