@@ -631,6 +631,29 @@ class GeoView(webapp2.RequestHandler):
         self.response.write(template.render(template_values))
 # [END GeoView]
 
+# [START GeoPoints]
+class GeoPoints(webapp2.RequestHandler):
+    def get(self, stream_key_str):
+        stream_key = ndb.Key(urlsafe=stream_key_str)
+        stream_obj = stream_key.get()
+
+        media_map = []
+        for media_item in stream_obj.media_items:
+            createTime = str(media_item.date_uploaded)[:10] + 'T' + str(media_item.date_uploaded)[11:] + 'Z'
+            lat = - 60.4301233 + 89.4245046 * random.random()
+            lon = - 287.057815 + 185.035715 * random.random()
+            url = media_item.content_url
+
+            media_map.append({
+                "createTime": createTime,
+                "lat": lat,
+                "lon": lon,
+                "url": url,
+            })
+        self.response.out.write(json.dumps(media_map))
+
+# [END GeoPoints]
+
 # [START app]
 app = webapp2.WSGIApplication([
     ('/', ViewAllPage),
@@ -651,5 +674,6 @@ app = webapp2.WSGIApplication([
     ('/report', SendReport),
     ('/leaderboard_calc', LeaderboardCalc),
     ('/geo/(.+)', GeoView),
+    ('/get_geo_points/(.+)', GeoPoints),
 ], debug=True)
 # [END app]
