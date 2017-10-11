@@ -6,6 +6,7 @@ import urllib
 import logging
 import time
 import json
+import random
 
 import jinja2
 import webapp2
@@ -588,6 +589,48 @@ class SocialPage(webapp2.RequestHandler):
         self.response.write(template.render(template_values))
 # [END SocialPage]
 
+# [START GeoView]
+class GeoView(webapp2.RequestHandler):
+
+    def get(self, stream_key_str):
+        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+
+        if current_user is None:
+            self.redirect("/auth")
+            return
+
+        stream_key = ndb.Key(urlsafe=stream_key_str)
+        stream_obj = stream_key.get()
+
+        media_map = []
+        for media_item in stream_obj.media_items:
+            createTime = str(media_item.date_uploaded)[:10] + 'T' + str(media_item.date_uploaded)[11:] + 'Z'
+            lat = - 60.4301233 + 89.4245046 * random.random()
+            lon = - 287.057815 + 185.035715 * random.random()
+            url = media_item.content_url
+
+            media_map.append({
+                "createTime": createTime,
+                "lat": lat,
+                "lon": lon,
+                "url": url,
+            })
+
+        template_values = {
+            'navigation': NAV_LINKS,
+            'user': current_user,
+            'page_title': "connexus",
+            'page_header': "Connex.us",
+            'stream_key': stream_key_str,
+            'stream_obj': stream_obj,
+            'media_map': media_map,
+            'auth_url': auth_url,
+            'url_link_text': url_link_text,
+        }
+        template = JINJA_ENVIRONMENT.get_template('geo_view.html')
+        self.response.write(template.render(template_values))
+# [END GeoView]
+
 # [START app]
 app = webapp2.WSGIApplication([
     ('/', ViewAllPage),
@@ -606,6 +649,7 @@ app = webapp2.WSGIApplication([
     ('/social',SocialPage),
     ('/error',ErrorPage),
     ('/report', SendReport),
-    ('/leaderboard_calc', LeaderboardCalc),   
+    ('/leaderboard_calc', LeaderboardCalc),
+    ('/geo/(.+)', GeoView),
 ], debug=True)
 # [END app]
