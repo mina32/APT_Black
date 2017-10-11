@@ -103,8 +103,6 @@ class Auth(webapp2.RequestHandler):
 
         tp = users.User(self.request.get("userEmail"))
         # TODO Use this userEmail and Password to sign in
-        # logging.info(self.request.get("userEmail"))
-        # logging.info(self.request.get("userPassword"))
 
         template_values = {
             'navigation': NAV_LINKS,
@@ -230,7 +228,6 @@ class CreatePage(webapp2.RequestHandler):
         self.redirect('/manage')
 # [END CreatePage]
 
-
 # [START ManagePage]
 class ManagePage(webapp2.RequestHandler):
     
@@ -284,7 +281,12 @@ class DeleteStream(webapp2.RequestHandler):
 class SubscribeStream(webapp2.RequestHandler):
     
     def post(self, stream_key_str):
-        current_user = users.get_current_user()
+        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+
+        if current_user is None:
+            self.redirect('/view/' + stream_key_str + "?auth_status_message=User is not logged in.")
+            return
+
         stream_key = ndb.Key(urlsafe=stream_key_str)
         stream_obj = stream_key.get()
         current_person = Person(
@@ -308,7 +310,12 @@ class UnsubscribeStream(webapp2.RequestHandler):
     def post(self):
         list_of_key_strings = self.request.get_all("unsubscribe")
         list_of_entities = ndb.get_multi([ndb.Key(Stream, int(k)) for k in list_of_key_strings])
-        current_user = users.get_current_user()
+        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+
+        if current_user is None:
+            self.redirect('/auth')
+            return
+
         current_person = Person(
             email=current_user.email()
         )
@@ -325,10 +332,6 @@ class ViewSinglePage(webapp2.RequestHandler):
     
     def get(self, stream_key_str):
         current_user, auth_url, url_link_text = check_auth(self.request.uri)
-
-        if current_user is None:
-            self.redirect("/auth")
-            return
 
         try:
             stream_key = ndb.Key(urlsafe=stream_key_str)
@@ -352,6 +355,7 @@ class ViewSinglePage(webapp2.RequestHandler):
                 'length': length,
                 'auth_url': auth_url,
                 'url_link_text': url_link_text,
+                "auth_status_message": self.request.get('auth_status_message'),
             }
             template = JINJA_ENVIRONMENT.get_template('view_single_stream.html')
             self.response.write(template.render(template_values))
@@ -571,11 +575,6 @@ class SocialPage(webapp2.RequestHandler):
     
     def get(self):
         current_user, auth_url, url_link_text = check_auth(self.request.uri)
-
-        if current_user is None:
-            self.redirect("/auth")
-            return
-        
         template_values = {
             'navigation': NAV_LINKS,
             'user': current_user,
@@ -591,7 +590,7 @@ class SocialPage(webapp2.RequestHandler):
 
 # [START app]
 app = webapp2.WSGIApplication([
-    ('/', Auth),
+    ('/', ViewAllPage),
     ('/auth', Auth),
     ('/create', CreatePage),
     ('/manage', ManagePage),

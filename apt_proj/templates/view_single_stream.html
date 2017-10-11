@@ -31,12 +31,28 @@
     });
 
 </script>
+<script src="/bootstrap/js/dropzone.js"></script>
+<link rel="stylesheet" href="/bootstrap/css/dropzone.css">
 {% endblock %}
 
 {% block content %}
 
     <div class="container">
-        <div class="row">
+        <form action="/sub_stream/{{ stream_key }}" method="post">
+            <div class="col-12">
+                <center>
+                    <a>
+                        <button type="submit" class="btn btn-primary"> Subscribe </button>
+                        <a style="color:red;">{{auth_status_message}}</a>
+                    </a>
+                </center>
+            </div>
+        </form>
+    </div>
+    <br>
+
+    <div class="container">
+        <div class="row" style="overflow: auto; height:200px;">
             <div class="col-9">
                 <div class="row">
                     {% for i in range(0,length) %}
@@ -52,30 +68,10 @@
         </div>
     </div>
     <br>
-    <div class="file-input-box container">
-        <form action="/post_media/{{ stream_key }}" method="POST" enctype="multipart/form-data">
-            <div class="row">
-                <div class="col-6">
-                    <input type="file" name="uploadImage" accept="image/*"><br><br>
-                    <input type="submit" name="submit" value="Upload file" class="btn btn-primary">
-                </div>
 
-                <div class="col-6">
-                    <input type="text" name="uploadComment" placeholder="Comment"><br><br>
-                    <h3>Add an image</h3>
-                </div>
-            </div>
-        </form>
-    </div>
-    <br>
     <div class="container">
-        <form action="/sub_stream/{{ stream_key }}" method="post">
-            <div class="col-12">
-                <center>
-                    <button type="submit" class="btn btn-primary"> Subscribe </button>
-                </center>
-            </div>
-        </form>
+        <h3>Add/Drop an image</h3><br>
+        <form action="/post_media/{{ stream_key }}" class="dropzone"></form>
     </div>
 {% endblock %}
 
