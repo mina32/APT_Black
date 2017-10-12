@@ -110,15 +110,18 @@ function initSlider(currentData) {
             max: new Date(max)
         }
     });
+    $("#slider-range").on("valuesChanged", function(e, data){
+        console.log("Something moved. min: " + data.values.min + " max: " + data.values.max);
+        var newData = currentData.filter(
+            function(item) {
+                var itemTime = new Date(item.createTime);
+                return (itemTime >= data.values.min && itemTime <= data.values.max)
+            }
+        );
+        refreshMap(newData);
+    });
 }
 
-// TODO: this isn't being called to update currentData
-$("#slider-range").bind("valuesChanged", function(e, data){
-    console.log("Will be executed");
-    console.log(e);
-    console.log(data)
-    console.log(currentData);
-});
 </script>
 
 {% endblock %}
