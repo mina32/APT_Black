@@ -175,8 +175,9 @@ class CreatePage(webapp2.RequestHandler):
         
         subscribers = []
         for e in subscriber_emails:
-            s_person = Person(email = e)
-            subscribers.append(s_person)
+            if len(e):
+                s_person = Person(email = e)
+                subscribers.append(s_person)
         
 
         # Process tags
@@ -194,13 +195,15 @@ class CreatePage(webapp2.RequestHandler):
         s_key = s.put()
         #Subscriber Emails
         for e in subscriber_emails:
-            mail.send_mail(sender=u_email,
-                to="<" + e + ">",
-                subject="New subscription alert",
-                body="You have been added as a subscriber to the stream at " + 
-                    app_identity.get_application_id() + ".appspot.com/view/" + s_key.urlsafe()
-                    + ".\nMessage from stream creator: " + self.request.get('subscribers_msg') 
-            )
+            if len(e):
+                logging.info(e)
+                mail.send_mail(sender=u_email,
+                    to="<" + e + ">",
+                    subject="New subscription alert",
+                    body="You have been added as a subscriber to the stream at " + 
+                        app_identity.get_application_id() + ".appspot.com/view/" + s_key.urlsafe()
+                        + ".\nMessage from stream creator: " + self.request.get('subscribers_msg') 
+                )
 
         fields = [
             search.TextField(name = 'stream_name', value = s.stream_name),
