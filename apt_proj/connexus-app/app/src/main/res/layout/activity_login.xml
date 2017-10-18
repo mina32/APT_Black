@@ -42,26 +42,14 @@
             android:textColor="@android:color/white"
             android:textSize="14sp" />
 
-        <TextView
-            android:id="@+id/detail"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fadeScrollbars="true"
-            android:gravity="center"
-            android:maxLines="5"
-            android:padding="10dp"
-            android:scrollbars="vertical"
-            android:textColor="@android:color/white"
-            android:textSize="14sp" />
 
         <Button
             android:id="@+id/button_view_streams"
             style="@style/Base.Widget.AppCompat.Button.Borderless.Colored"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:visibility="gone"
-            tools:text="View Streams"
-            tools:visibility="visible" />
+            android:text="View Streams"
+            tools:text="View Streams" />
 
     </LinearLayout>
 
