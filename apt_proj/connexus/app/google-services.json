@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "700879577383",
+    "project_id": "connexus-ui"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:700879577383:android:078d36b56cd8972e",
+        "android_client_info": {
+          "package_name": "com.example.connexus_ui.connexus"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "700879577383-8j9s16krsltnu6l1a6e5bnl95drctvfr.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "700879577383-krk65tetnjt7jqcq9a5ggu0saml3efki.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.connexus_ui.connexus",
+            "certificate_hash": "72eb700f18f7c660df4dec8bb496a1205042c701"
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqP0JlsukcF3bC4ujvB2yQ0GjGxaaaSKA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
