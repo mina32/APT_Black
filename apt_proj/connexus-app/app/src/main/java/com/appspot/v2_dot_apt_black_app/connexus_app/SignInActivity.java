@@ -40,7 +40,7 @@ public class SignInActivity extends AppCompatActivity implements
 
         // Views
         mIdTokenTextView = (TextView) findViewById(R.id.detail);
-        mRefreshButton = (Button) findViewById(R.id.button_optional_action);
+        mRefreshButton = (Button) findViewById(R.id.button_view_streams);
         mRefreshButton.setText(R.string.refresh_token);
 
         // Button click listeners
