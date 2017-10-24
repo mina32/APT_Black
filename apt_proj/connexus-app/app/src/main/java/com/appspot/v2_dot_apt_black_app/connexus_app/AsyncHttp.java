@@ -17,12 +17,12 @@ import android.widget.Toast;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.loopj.android.http.*;
-
-import java.io.InputStream;
-import java.net.URL;
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
 
 import cz.msebera.android.httpclient.Header;
+
 
 public class AsyncHttp  extends AppCompatActivity
 {
@@ -51,46 +51,21 @@ public class AsyncHttp  extends AppCompatActivity
         client.post(getAbsoluteUrl(url), params, responseHandler);
     }
 
-    private String getAbsoluteUrl(String relativeUrl)
-    {
+    private String getAbsoluteUrl(String relativeUrl) {
         String REQ = "userEmail";
         String uriRequested = BASE_URL + relativeUrl;
 
-        if(userIsSignedIn)
-        {
+        if (userIsSignedIn) {
             String userEmail = userDataIntent.getStringExtra(REQ);
-            if(!uriRequested.contains("?"))
-            {
+            if (!uriRequested.contains("?")) {
                 uriRequested += "?" + REQ + "=" + userEmail;
-            }
-            else
-            {
+            } else {
                 uriRequested += "&" + REQ + "=" + userEmail;
             }
         }
 
         Toast.makeText(context, uriRequested, Toast.LENGTH_LONG).show();
         return uriRequested;
-    }
-
-    private Drawable downloadImage(String url)
-    {
-        try
-        {
-            // TODO: Fix this part. Not downloading. Throws android.os.NetworkOnMainThreadException
-            Log.i("==> ", url);
-            InputStream is = (InputStream) new URL(url).getContent();
-            Log.i("==> ", "NULL-A");
-            Drawable d = Drawable.createFromStream(is, url);
-            Log.i("==> ", "NULL-B");
-            return d;
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            Log.i("==> ", "NULL--");
-            return null;
-        }
     }
 
     private void update16BoxGridLayout(final JsonArray streams)
@@ -113,10 +88,9 @@ public class AsyncHttp  extends AppCompatActivity
                 if(streams != null && i < streams.size())
                 {
                     jObj = (JsonObject) streams.get(i);
-                    backGd = downloadImage(jObj.get("cover_image").getAsString().replace("\"", ""));
                 }
 
-                ConnexusButton oImageButton = new ConnexusButton(context, jObj, backGd);
+                ConnexusButton oImageButton = new ConnexusButton(context, jObj);
                 GridLayout.Spec rowSpan = GridLayout.spec(GridLayout.UNDEFINED, 1);
                 GridLayout.Spec colspan = GridLayout.spec(GridLayout.UNDEFINED, 1);
                 GridLayout.LayoutParams gridParam = new GridLayout.LayoutParams(rowSpan, colspan);

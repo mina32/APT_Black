@@ -2,37 +2,34 @@ package com.appspot.v2_dot_apt_black_app.connexus_app;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import com.google.gson.JsonObject;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 
 /**
  * Created by brice on 10/23/17.
  */
 
-public class ConnexusButton extends android.support.v7.widget.AppCompatButton
+public class ConnexusButton extends android.support.v7.widget.AppCompatButton implements AsyncResponse
 {
     String name;
     Context context;
     Drawable backGd;
+    DownloadTask asyncTask = new DownloadTask();
 
-    public ConnexusButton(final Context con, JsonObject jObj, Drawable d)
+    @Override
+    public void processFinish(Drawable output){
+        this.backGd = output;
+        this.setBackgroundDrawable(output);
+    }
+
+    public ConnexusButton(final Context con, JsonObject jObj)
     {
         super(con);
         this.context = con;
-        this.backGd = d;
 
         if(jObj != null)
         {
@@ -45,11 +42,9 @@ public class ConnexusButton extends android.support.v7.widget.AppCompatButton
 
             this.setText(name);
             this.setTextSize(8);
-            if(backGd != null)
-            {
-                this.setBackgroundDrawable(backGd);
-            }
             Log.i("=> ", jObj.toString());
+            asyncTask.delegate = this;
+            asyncTask.execute(jObj.get("cover_image").getAsString().replace("\"", ""));
         }
         else
         {
@@ -70,7 +65,6 @@ public class ConnexusButton extends android.support.v7.widget.AppCompatButton
                 "owner":"vasic@utexas.edu"
             }
 
-            TODO : Use this structure to query the cover image and set as the button background
                    Store the image on the phone with name the cover url.
          */
         this.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f));
@@ -85,4 +79,5 @@ public class ConnexusButton extends android.support.v7.widget.AppCompatButton
             }
         });
     }
+
 }
