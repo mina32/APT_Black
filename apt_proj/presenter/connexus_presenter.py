@@ -46,19 +46,27 @@ NAV_LINKS = [
     {"label": "Social", "link": "/social"},
 ]
 
-def check_auth(uri):
+def check_auth(request, isAppRequest=False):
     """
         Checks if the current user is authenticated
         Returns the current user, the url and the url_link_text
     """
+    app_connection = False;
+
+    if isAppRequest:
+        app_connection = True
+        current_user = Person(email=request.get("userEmail"))
+        return current_user, "", "", app_connection
+
     current_user = users.get_current_user()
+    logging.info(current_user)
     if current_user:
-        auth_url = users.create_logout_url(uri)
+        auth_url = users.create_logout_url(request.uri)
         url_link_text = 'Logout'
     else:
-        auth_url = users.create_login_url(uri)
+        auth_url = users.create_login_url(request.uri)
         url_link_text = 'Login'
-    return current_user, auth_url, url_link_text
+    return current_user, auth_url, url_link_text, app_connection
 
 
 # [START UserAuthentication]
@@ -66,7 +74,7 @@ class Auth(webapp2.RequestHandler):
 
     def get(self):
         submit_url = "/manage"
-        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+        current_user, auth_url, url_link_text, app_connection = check_auth(self.request)
 
         if current_user:
             # Proceed to Create stream page if user exists
@@ -100,7 +108,7 @@ class Auth(webapp2.RequestHandler):
     def post(self):
         submit_url = "/manage"
 
-        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+        current_user, auth_url, url_link_text, app_connection = check_auth(self.request)
 
         tp = users.User(self.request.get("userEmail"))
         # TODO Use this userEmail and Password to sign in
@@ -128,7 +136,7 @@ class Auth(webapp2.RequestHandler):
 class CreatePage(webapp2.RequestHandler):
     def get(self):
         submit_url = "/manage"
-        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+        current_user, auth_url, url_link_text, app_connection = check_auth(self.request)
 
         if current_user is None:
             self.redirect("/auth")
@@ -153,7 +161,7 @@ class CreatePage(webapp2.RequestHandler):
         self.response.write(template.render(template_values))
 
     def post(self):
-        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+        current_user, auth_url, url_link_text, app_connection = check_auth(self.request)
 
         if current_user is None:
             self.redirect("/auth")
@@ -236,7 +244,7 @@ class CreatePage(webapp2.RequestHandler):
 class ManagePage(webapp2.RequestHandler):
     
     def get(self):
-        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+        current_user, auth_url, url_link_text, app_connection = check_auth(self.request)
 
         if current_user:
             owned_query = Stream.query(
@@ -271,7 +279,7 @@ class ManagePage(webapp2.RequestHandler):
 class DeleteStream(webapp2.RequestHandler):
     
     def post(self):
-        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+        current_user, auth_url, url_link_text, app_connection = check_auth(self.request)
         list_of_key_strings = self.request.get_all("del")
         for k in list_of_key_strings:
              search.Index('api-stream').delete(ndb.Key(Stream, int(k)).urlsafe())
@@ -285,7 +293,7 @@ class DeleteStream(webapp2.RequestHandler):
 class SubscribeStream(webapp2.RequestHandler):
     
     def post(self, stream_key_str):
-        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+        current_user, auth_url, url_link_text, app_connection = check_auth(self.request)
 
         if current_user is None:
             self.redirect('/view/' + stream_key_str + "?auth_status_message=User is not logged in.")
@@ -314,7 +322,7 @@ class UnsubscribeStream(webapp2.RequestHandler):
     def post(self):
         list_of_key_strings = self.request.get_all("unsubscribe")
         list_of_entities = ndb.get_multi([ndb.Key(Stream, int(k)) for k in list_of_key_strings])
-        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+        current_user, auth_url, url_link_text, app_connection = check_auth(self.request)
 
         if current_user is None:
             self.redirect('/auth')
@@ -335,7 +343,7 @@ class UnsubscribeStream(webapp2.RequestHandler):
 class ViewSinglePage(webapp2.RequestHandler):
     
     def get(self, stream_key_str):
-        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+        current_user, auth_url, url_link_text, app_connection = check_auth(self.request)
 
         try:
             stream_key = ndb.Key(urlsafe=stream_key_str)
@@ -372,7 +380,7 @@ class ViewAllPage(webapp2.RequestHandler):
     
     def get(self):
         try:
-            current_user, auth_url, url_link_text = check_auth(self.request.uri)
+            current_user, auth_url, url_link_text, app_connection = check_auth(self.request)
             all_streams = Stream.query().fetch()
             template_values = {
                 'navigation': NAV_LINKS,
@@ -394,7 +402,7 @@ class ViewAllPage(webapp2.RequestHandler):
 class PostMedia(blobstore_handlers.BlobstoreUploadHandler):
 
     def post(self, stream_key_str):
-        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+        current_user, auth_url, url_link_text, app_connection = check_auth(self.request)
 
         if current_user is None:
             self.redirect('/auth')
@@ -428,7 +436,7 @@ class PostMedia(blobstore_handlers.BlobstoreUploadHandler):
 # [START SearchPage]
 class SearchPage(webapp2.RequestHandler):
     def get(self):
-        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+        current_user, auth_url, url_link_text, app_connection = check_auth(self.request)
         search_results = []
         query_string = self.request.get('query')
         query = search.Query(query_string=query_string) #, options=options)
@@ -472,7 +480,7 @@ class TrendingPage(webapp2.RequestHandler):
 
     def get(self):
         
-        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+        current_user, auth_url, url_link_text, app_connection = check_auth(self.request)
         
         all_streams = Stream.query().fetch()
         sorted_streams = sorted(all_streams, key=lambda s: len(s.recent_views),
@@ -531,7 +539,7 @@ class LeaderboardCalc(webapp2.RequestHandler):
 class SendReport(webapp2.RequestHandler):
 
     def get(self):
-        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+        current_user, auth_url, url_link_text, app_connection = check_auth(self.request)
 
         if REPORT_RATE_MINUTES == '0':
             return
@@ -578,7 +586,7 @@ class ErrorPage(webapp2.RequestHandler):
 class SocialPage(webapp2.RequestHandler):
     
     def get(self):
-        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+        current_user, auth_url, url_link_text, app_connection = check_auth(self.request)
         template_values = {
             'navigation': NAV_LINKS,
             'user': current_user,
@@ -596,7 +604,7 @@ class SocialPage(webapp2.RequestHandler):
 class GeoView(webapp2.RequestHandler):
 
     def get(self, stream_key_str):
-        current_user, auth_url, url_link_text = check_auth(self.request.uri)
+        current_user, auth_url, url_link_text, app_connection = check_auth(self.request)
 
         if current_user is None:
             self.redirect("/auth")
@@ -654,8 +662,111 @@ class GeoPoints(webapp2.RequestHandler):
                 "url": url,
             })
         self.response.out.write(json.dumps(media_map))
-
 # [END GeoPoints]
+
+# [START AppMostViewed]
+class AppMostViewed(webapp2.RequestHandler):
+
+    def get(self):
+        jsonResp = {}
+        try:
+            all_streams = Stream.query().fetch()
+            sorted_streams = sorted(all_streams, key=lambda s: s.date_last_updated, reverse=True)
+            mapped = map( lambda s: {
+                                        "owner": str(s.owner.email),
+                                        "key_id": str(s.key.id()),
+                                        "key_url": str(s.key.urlsafe()),
+                                        "cover_image": str(s.cover_image),
+                                        "stream_name": str(s.stream_name),
+                                        "subscribers": map(lambda x : str(x.email), s.subscribers),
+                                        },
+                                        sorted_streams )
+
+            jsonResp = {"all_streams": mapped}
+        except:
+            pass
+
+        st = ""
+        for ch in str(json.dumps(jsonResp)):
+            st += ch
+
+        logging.info(st)
+        self.response.headers['Content-Type'] = 'application/json'
+        self.response.out.write(str(json.dumps(jsonResp)))
+# [END AppMostViewed]
+
+# [START AppRecentSubscribed]
+class AppRecentSubscribed(webapp2.RequestHandler):
+    def get(self):
+        jsonResp = {}
+        try:
+            current_user, auth_url, url_link_text, app_connection = check_auth(self.request, True)
+            if current_user:
+                logging.info(current_user.email);
+                subscribed_query = Stream.query(Stream.subscribers == current_user)
+                logging.info("===> A\n");
+                logging.info("===> \n" + str(subscribed_query));
+                subscribed_streams = subscribed_query.fetch()
+                sorted_streams = sorted(subscribed_streams, key=lambda s: s.date_last_updated, reverse=True)
+                mapped = map( lambda s: {
+                                            "key_id": str(s.key.id()),
+                                            "key_url": str(s.key.urlsafe()),
+                                            "cover_image": str(s.cover_image),
+                                            "stream_name": str(s.stream_name)
+                                        }
+                                        , sorted_streams )
+                jsonResp = {"subscribed_streams": mapped}
+        except:
+            pass
+
+        st = ""
+        for ch in str(json.dumps(jsonResp)):
+            st += ch
+
+        logging.info(st)
+        self.response.headers['Content-Type'] = 'application/json'
+        self.response.out.write(str(json.dumps(jsonResp)))
+# [END AppRecentSubscribed]
+
+# [START AppViewRecentImages]
+class AppViewRecentImages(webapp2.RequestHandler):
+    def get(self):
+        jsonResp = {}
+        try:
+            current_user, auth_url, url_link_text, app_connection = check_auth(self.request, True)
+
+            key_url = request.get("key_url")
+            stream_key = ndb.Key(urlsafe=key_url)
+            stream_obj = stream_key.get()
+            stream_obj.views = stream_obj.views + 1
+            stream_obj.recent_views.append(datetime.now())
+            stream_obj.put()
+
+            media_items = stream_obj.media_items
+
+            logging.info("items \n\n" + media_items)
+
+            if current_user:
+                sorted_streams = sorted(media_items, key=lambda s: s.date_uploaded, reverse=True)
+                mapped = map( lambda s: {
+                                            # "key_id": str(s.key.id()),
+                                            # "key_url": str(s.key.urlsafe()),
+                                            # "cover_image": str(s.cover_image),
+                                            # "stream_name": str(s.stream_name)
+                                        }
+                                        , sorted_streams )
+                jsonResp = {"stream_images": mapped}
+        except:
+            pass
+
+        st = ""
+        for ch in str(json.dumps(jsonResp)):
+            st += ch
+
+        logging.info(st)
+        self.response.headers['Content-Type'] = 'application/json'
+        self.response.out.write(str(json.dumps(jsonResp)))
+# [END AppViewRecentImages]
 
 # [START app]
 app = webapp2.WSGIApplication([
@@ -678,5 +789,8 @@ app = webapp2.WSGIApplication([
     ('/leaderboard_calc', LeaderboardCalc),
     ('/geo/(.+)', GeoView),
     ('/get_geo_points/(.+)', GeoPoints),
+    ('/androidMostViewed', AppMostViewed),
+    ('/androidSubscribedStreams', AppRecentSubscribed),
+    ('/androidViewImages', AppViewRecentImages),
 ], debug=True)
 # [END app]

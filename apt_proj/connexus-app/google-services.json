@@ -1,0 +1,56 @@
+{
+  "project_info": {
+    "project_number": "878862959391",
+    "project_id": "apt-black-app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:878862959391:android:9dbdf32de4f2d421",
+        "android_client_info": {
+          "package_name": "com.appspot.v2_dot_apt_black_app.connexus_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "878862959391-h8coosjuqgdlr1b2f68jmb0fi0l20m59.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.appspot.v2_dot_apt_black_app.connexus_app",
+            "certificate_hash": "72eb700f18f7c660df4dec8bb496a1205042c701"
+          }
+        },
+        {
+          "client_id": "878862959391-kq6fj9m9s00vrj9v39bda3c0up63rfrj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.appspot.v2_dot_apt_black_app.connexus_app",
+            "certificate_hash": "1bfb31eda5bce23a5a0b9fc8a1aa8151f05cc347"
+          }
+        },
+        {
+          "client_id": "878862959391-07tet01bjtoq57lhp9rb8ep1m7gqs9lt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBlf3xRmxpC7pYJyLnH4NqogtbkiVwr7k8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -29,7 +29,7 @@ DEFAULT_STREAM_NAME = 'default_stream'
 # will be consistent. However, the write rate should be limited to
 # ~1/second.
 
-def stream_key(guestbook_name=DEFAULT_STREAM_NAME):
+def stream_key(stream_name=DEFAULT_STREAM_NAME):
     return ndb.Key('Stream', stream_name)
 
 
