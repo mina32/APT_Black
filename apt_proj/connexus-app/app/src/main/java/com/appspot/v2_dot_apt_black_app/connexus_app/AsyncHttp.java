@@ -269,4 +269,9 @@ public class AsyncHttp  extends AppCompatActivity
         get("/androidViewImages" + "?key_url=" + userDataIntent.getStringExtra("key_url"), null, respHandler);
     }
     // [END showStreamPicture]
+
+    // TODO: Implement Post image: Next on Brice, Anyone feel free to take though
+    // TODO: Implement Get nearby
+    // TODO: Implement Search
+    // TODO: Use getMostSubscribedStreams to solve the right above two TODOS.
 }
