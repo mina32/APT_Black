@@ -437,7 +437,6 @@ class PostMedia(blobstore_handlers.BlobstoreUploadHandler):
 class SearchPage(webapp2.RequestHandler):
     def get(self):
         current_user, auth_url, url_link_text, app_connection = check_auth(self.request)
-        search_results = []
         query_string = self.request.get('query')
         query = search.Query(query_string=query_string) #, options=options)
         search_results = search.Index('api-stream').search(query)
@@ -470,8 +469,6 @@ class SearchOptions(webapp2.RequestHandler):
         )
         matches = matching_query.fetch(20)
         self.response.out.write(json.dumps([i.search_tag for i in matches]))
-        #return matches
-
 # [END SearchOptions]
 
 
@@ -671,7 +668,7 @@ class AppMostViewed(webapp2.RequestHandler):
         jsonResp = {}
         try:
             all_streams = Stream.query().fetch()
-            sorted_streams = sorted(all_streams, key=lambda s: s.date_last_updated, reverse=True)
+            sorted_streams = sorted(all_streams, key=lambda s: s.date_last_updated, reverse=False)
             mapped = map( lambda s: {
                                         "owner": str(s.owner.email),
                                         "key_id": str(s.key.id()),
@@ -686,11 +683,6 @@ class AppMostViewed(webapp2.RequestHandler):
         except:
             pass
 
-        st = ""
-        for ch in str(json.dumps(jsonResp)):
-            st += ch
-
-        logging.info(st)
         self.response.headers['Content-Type'] = 'application/json'
         self.response.out.write(str(json.dumps(jsonResp)))
 # [END AppMostViewed]
@@ -707,8 +699,9 @@ class AppRecentSubscribed(webapp2.RequestHandler):
                 logging.info("===> A\n");
                 logging.info("===> \n" + str(subscribed_query));
                 subscribed_streams = subscribed_query.fetch()
-                sorted_streams = sorted(subscribed_streams, key=lambda s: s.date_last_updated, reverse=True)
+                sorted_streams = sorted(subscribed_streams, key=lambda s: s.date_last_updated, reverse=False)
                 mapped = map( lambda s: {
+                                            "owner": str(s.owner.email),
                                             "key_id": str(s.key.id()),
                                             "key_url": str(s.key.urlsafe()),
                                             "cover_image": str(s.cover_image),
@@ -719,11 +712,6 @@ class AppRecentSubscribed(webapp2.RequestHandler):
         except:
             pass
 
-        st = ""
-        for ch in str(json.dumps(jsonResp)):
-            st += ch
-
-        logging.info(st)
         self.response.headers['Content-Type'] = 'application/json'
         self.response.out.write(str(json.dumps(jsonResp)))
 # [END AppRecentSubscribed]
@@ -735,7 +723,7 @@ class AppViewRecentImages(webapp2.RequestHandler):
         try:
             current_user, auth_url, url_link_text, app_connection = check_auth(self.request, True)
 
-            key_url = request.get("key_url")
+            key_url = self.request.get("key_url")
             stream_key = ndb.Key(urlsafe=key_url)
             stream_obj = stream_key.get()
             stream_obj.views = stream_obj.views + 1
@@ -744,26 +732,16 @@ class AppViewRecentImages(webapp2.RequestHandler):
 
             media_items = stream_obj.media_items
 
-            logging.info("items \n\n" + media_items)
-
-            if current_user:
-                sorted_streams = sorted(media_items, key=lambda s: s.date_uploaded, reverse=True)
-                mapped = map( lambda s: {
-                                            # "key_id": str(s.key.id()),
-                                            # "key_url": str(s.key.urlsafe()),
-                                            # "cover_image": str(s.cover_image),
-                                            # "stream_name": str(s.stream_name)
-                                        }
-                                        , sorted_streams )
-                jsonResp = {"stream_images": mapped}
+            sorted_streams = sorted(media_items, key=lambda s: s.date_uploaded, reverse=False)
+            mapped = map( lambda m: {
+                                        "image_url": str(m.content_url),
+                                        "upload_date": str(m.date_uploaded),
+                                    }
+                                    , sorted_streams )
+            jsonResp = {"media_items": mapped}
         except:
             pass
 
-        st = ""
-        for ch in str(json.dumps(jsonResp)):
-            st += ch
-
-        logging.info(st)
         self.response.headers['Content-Type'] = 'application/json'
         self.response.out.write(str(json.dumps(jsonResp)))
 # [END AppViewRecentImages]
