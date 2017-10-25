@@ -746,6 +746,29 @@ class AppViewRecentImages(webapp2.RequestHandler):
         self.response.out.write(str(json.dumps(jsonResp)))
 # [END AppViewRecentImages]
 
+# [START AppSearchResults]
+class AppSearchResults(webapp2.RequestHandler):
+    def get(self):
+        current_user, auth_url, url_link_text, app_connection = check_auth(self.request)
+        query_string = self.request.get('query')
+        query = search.Query(query_string=query_string) #, options=options)
+        search_results = search.Index('api-stream').search(query)
+        search_result_keys = [d.doc_id for d in search_results.results]
+        search_result_objs = [ndb.Key(urlsafe=k).get() for k in search_result_keys]
+        sorted_streams = sorted(search_result_objs, key=lambda s: s.date_last_updated, reverse=False)
+        mapped = map( lambda s: {
+                                    "owner": str(s.owner.email),
+                                    "key_id": str(s.key.id()),
+                                    "key_url": str(s.key.urlsafe()),
+                                    "cover_image": str(s.cover_image),
+                                    "stream_name": str(s.stream_name)
+                                }
+                                , sorted_streams )
+        jsonResp = {"search_streams": mapped}
+        self.response.headers['Content-Type'] = 'application/json'
+        self.response.out.write(str(json.dumps(jsonResp)))
+# [END SearchResults]
+
 # [START app]
 app = webapp2.WSGIApplication([
     ('/', ViewAllPage),
@@ -770,5 +793,6 @@ app = webapp2.WSGIApplication([
     ('/androidMostViewed', AppMostViewed),
     ('/androidSubscribedStreams', AppRecentSubscribed),
     ('/androidViewImages', AppViewRecentImages),
+    ('/androidSearchResults', AppSearchResults),
 ], debug=True)
 # [END app]
