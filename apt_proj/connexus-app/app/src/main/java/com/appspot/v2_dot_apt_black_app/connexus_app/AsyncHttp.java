@@ -7,9 +7,7 @@ package com.appspot.v2_dot_apt_black_app.connexus_app;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.GridLayout;
 import android.widget.Toast;
@@ -26,7 +24,7 @@ import cz.msebera.android.httpclient.Header;
 
 public class AsyncHttp  extends AppCompatActivity
 {
-    private static final String BASE_URL = "http://v2-dot-apt-black-app.appspot.com";
+    private static final String BASE_URL = "http://v3-dot-apt-black-app.appspot.com";
 
     private Context context;
     private View viewToModify;
@@ -272,6 +270,53 @@ public class AsyncHttp  extends AppCompatActivity
 
     // TODO: Implement Post image: Next on Brice, Anyone feel free to take though
     // TODO: Implement Get nearby
+
     // TODO: Implement Search
+    // [ START Searc streams ]
+    private  void searchStreamsHandler(byte[] response)
+    {
+        try
+        {
+            String s = new String(response);
+            JsonParser parser = new JsonParser();
+            JsonObject json = parser.parse(s).getAsJsonObject();
+            JsonArray streams = json.get("search_streams").getAsJsonArray();
+            update16BoxGridLayout(streams);
+        }
+        catch(Exception e)
+        {
+            update16BoxGridLayout(null);
+        }
+    }
+
+    public void getSearchStreams(String query)
+    {
+        AsyncHttpResponseHandler respHandler = new  AsyncHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] response)
+            {
+                searchStreamsHandler(response);
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e)
+            {
+                // called when response HTTP status is "4XX" (eg. 401, 403, 404)
+                Toast.makeText(context, "Server connection failed! " + statusCode, Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onRetry(int retryNo)
+            {
+                Toast.makeText(context, "Retry " + retryNo, Toast.LENGTH_SHORT).show();
+                if(retryNo == 2)
+                    return;
+            }
+        };
+        RequestParams req = new RequestParams();
+        req.put("query", query);
+        get("/androidSearchResults", req, respHandler);
+    }
+    // [END Search streams ]
     // TODO: Use getMostSubscribedStreams to solve the right above two TODOS.
 }
