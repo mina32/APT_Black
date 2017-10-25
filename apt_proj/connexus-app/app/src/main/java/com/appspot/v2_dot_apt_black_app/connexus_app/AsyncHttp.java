@@ -64,7 +64,7 @@ public class AsyncHttp  extends AppCompatActivity
             }
         }
 
-        Toast.makeText(context, uriRequested, Toast.LENGTH_LONG).show();
+//        Toast.makeText(context, uriRequested, Toast.LENGTH_SHORT).show();
         return uriRequested;
     }
 
@@ -84,13 +84,12 @@ public class AsyncHttp  extends AppCompatActivity
             for(int r = 0; r < rows; r++)
             {
                 JsonObject jObj = null;
-                Drawable backGd = null;
                 if(streams != null && i < streams.size())
                 {
                     jObj = (JsonObject) streams.get(i);
                 }
 
-                ConnexusButton oImageButton = new ConnexusButton(context, jObj);
+                ConnexusButton oImageButton = new ConnexusButton(context, jObj, userDataIntent);
                 GridLayout.Spec rowSpan = GridLayout.spec(GridLayout.UNDEFINED, 1);
                 GridLayout.Spec colspan = GridLayout.spec(GridLayout.UNDEFINED, 1);
                 GridLayout.LayoutParams gridParam = new GridLayout.LayoutParams(rowSpan, colspan);
@@ -100,26 +99,52 @@ public class AsyncHttp  extends AppCompatActivity
         }
     }
 
+    private void update16BoxGridView(final JsonArray images)
+    {
+        GridLayout gridLayout = (GridLayout) viewToModify;
+        gridLayout.removeAllViews();
+
+        int rows = 4;
+        int columns = 4;
+        gridLayout.setColumnCount(columns);
+        gridLayout.setRowCount(rows);
+
+        int i = 0;
+        for(int c = 0; c < columns; c++)
+        {
+            for(int r = 0; r < rows; r++)
+            {
+                JsonObject jObj = null;
+                if(images != null && i < images.size())
+                {
+                    jObj = (JsonObject) images.get(i);
+                }
+
+                ConnexusImageView oImageView = new ConnexusImageView(context, jObj, userDataIntent);
+                GridLayout.Spec rowSpan = GridLayout.spec(GridLayout.UNDEFINED, 1);
+                GridLayout.Spec colspan = GridLayout.spec(GridLayout.UNDEFINED, 1);
+                GridLayout.LayoutParams gridParam = new GridLayout.LayoutParams(rowSpan, colspan);
+                gridLayout.addView(oImageView, gridParam);
+                i++;
+            }
+        }
+    }
+
     // [ START Get Most recently updated streams]
     private  void recentlyUpdatedStreamsHandler(byte[] response)
     {
-        String s = new String(response);
-        JsonParser parser = new JsonParser();
-        JsonObject json = parser.parse(s).getAsJsonObject();
-        JsonArray streams = json.get("all_streams").getAsJsonArray();
-
-        if(json == null)
+        try
         {
-            Toast.makeText(context, "No Json value found!", Toast.LENGTH_LONG).show();
+            String s = new String(response);
+            JsonParser parser = new JsonParser();
+            JsonObject json = parser.parse(s).getAsJsonObject();
+            JsonArray streams = json.get("all_streams").getAsJsonArray();
+            update16BoxGridLayout(streams);
         }
-        else
+        catch(Exception e)
         {
-            s = streams.toString();
-//            Log.i("=> ", s);
+            update16BoxGridLayout(null);
         }
-
-        // Update the viewGrid
-        update16BoxGridLayout(streams);
     }
 
     public void getMostRecentlyUpdatedStreams()
@@ -163,8 +188,6 @@ public class AsyncHttp  extends AppCompatActivity
         }
         catch(Exception e)
         {
-            e.printStackTrace();
-            Toast.makeText(context, "No Json value found!", Toast.LENGTH_LONG).show();
             update16BoxGridLayout(null);
         }
     }
@@ -201,32 +224,28 @@ public class AsyncHttp  extends AppCompatActivity
     // [ START showStreamPicture]
     private  void showStreamPicturesHandler(byte[] response)
     {
-        String s = new String(response);
-        JsonParser parser = new JsonParser();
-        JsonObject json = parser.parse(s).getAsJsonObject();
-        JsonArray streams = json.get("images").getAsJsonArray();
-
-        if(json == null)
+        try
         {
-            Toast.makeText(context, "No Json value found!", Toast.LENGTH_LONG).show();
+            String s = new String(response);
+            JsonParser parser = new JsonParser();
+            JsonObject json = parser.parse(s).getAsJsonObject();
+            JsonArray images = json.get("media_items").getAsJsonArray();
+            update16BoxGridView(images);
         }
-        else
+        catch(Exception e)
         {
-            s = streams.toString();
-            Log.i("=> ", s);
+            update16BoxGridView(null);
         }
-
-        // Update the viewGrid
-        update16BoxGridLayout(streams);
     }
 
     public void showStreamPicture()
     {
-        AsyncHttpResponseHandler respHandler = new  AsyncHttpResponseHandler() {
+        AsyncHttpResponseHandler respHandler = new  AsyncHttpResponseHandler()
+        {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] response)
             {
-                subscribedStreamsHandler(response);
+                showStreamPicturesHandler(response);
             }
 
             @Override
@@ -241,11 +260,18 @@ public class AsyncHttp  extends AppCompatActivity
             {
                 Toast.makeText(context, "Retry " + retryNo, Toast.LENGTH_SHORT).show();
                 if(retryNo == 2)
+                {
                     return;
+                }
             }
         };
 
-        get("/androidViewImages", null, respHandler);
+        get("/androidViewImages" + "?key_url=" + userDataIntent.getStringExtra("key_url"), null, respHandler);
     }
     // [END showStreamPicture]
+
+    // TODO: Implement Post image: Next on Brice, Anyone feel free to take though
+    // TODO: Implement Get nearby
+    // TODO: Implement Search
+    // TODO: Use getMostSubscribedStreams to solve the right above two TODOS.
 }

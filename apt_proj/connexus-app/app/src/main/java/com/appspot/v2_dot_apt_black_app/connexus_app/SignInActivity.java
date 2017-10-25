@@ -32,9 +32,6 @@ public class SignInActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener,
         View.OnClickListener
 {
-
-    int duration = Toast.LENGTH_SHORT;
-
     Context context = this;
     private static final String TAG = "SignInActivity";
     private static final int RC_SIGN_IN = 9001;
@@ -102,7 +99,6 @@ public class SignInActivity extends AppCompatActivity implements
     {
         super.onActivityResult(requestCode, resultCode, data);
 
-        Toast.makeText(context, "activity result", duration).show();
         // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         if (requestCode == RC_SIGN_IN)
         {
@@ -119,14 +115,12 @@ public class SignInActivity extends AppCompatActivity implements
         {
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
             handleSignInResult(result);
-            Toast.makeText(context, "Handling Hobs", duration).show();
         }
     }
 
     // [START handleSignInResult]
     private void handleSignInResult(GoogleSignInResult result)
     {
-        Toast.makeText(context, "Handling sign in", duration).show();
         if (result.isSuccess()) {
             // Signed in successfully, show authenticated UI.
             acct = result.getSignInAccount();
@@ -134,7 +128,6 @@ public class SignInActivity extends AppCompatActivity implements
         else
         {
             // Signed out, show unauthenticated UI.
-            Toast.makeText(context, "Result not success" + result.getStatus(), duration).show();
             findViewById(R.id.sign_in_status).setVisibility(View.VISIBLE);
         }
         updateUI();
@@ -203,18 +196,16 @@ public class SignInActivity extends AppCompatActivity implements
         switch (v.getId())
         {
             case R.id.button_sign_in:
-                Toast.makeText(context, "Signing in", duration).show();
                 signIn();
                 break;
             case R.id.button_sign_out:
-                Toast.makeText(context, "Signing out", duration).show();
+                Toast.makeText(context, "Signing out", Toast.LENGTH_SHORT).show();
                 signOut();
                 break;
             case R.id.button_view_streams:
                 Intent intent = new Intent(context, AllStreamActivity.class);
                 setNewActivityIntent(intent);
                 startActivity(intent);
-                Toast.makeText(context, "View All", duration).show();
                 break;
         }
     }
