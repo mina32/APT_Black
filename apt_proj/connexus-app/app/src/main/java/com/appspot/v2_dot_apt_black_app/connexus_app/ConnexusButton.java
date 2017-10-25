@@ -3,12 +3,8 @@ package com.appspot.v2_dot_apt_black_app.connexus_app;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 
@@ -36,12 +32,36 @@ public class ConnexusButton extends android.support.v7.widget.AppCompatButton im
             return;
         }
 
-        Bitmap b = ((BitmapDrawable)backGd).getBitmap();
-
-        if(!name.isEmpty())
-        {
-            // TODO: Draw text on image
+        if(name.isEmpty()) {
+            name = "";
         }
+        /* I did try to go the drawable route...
+        //TODO: revisit if we have time to make text over images more readable
+        Bitmap canvasBitmap = Bitmap.createBitmap(backGd.getIntrinsicWidth(), backGd.getIntrinsicHeight(),
+                Bitmap.Config.ARGB_8888);
+        // Create a canvas, that will draw on to canvasBitmap.
+        Canvas imageCanvas = new Canvas(canvasBitmap);
+        // Set up the paint for use with our Canvas
+        Paint imagePaint = new Paint();
+        imagePaint.setTextAlign(Paint.Align.CENTER);
+        imagePaint.setTextSize(16f);
+        // Draw the image to our canvas
+        output.draw(imageCanvas);
+        // Draw the text on top of our image
+        imageCanvas.drawText(name, backGd.getIntrinsicWidth() / 2,
+                backGd.getIntrinsicHeight() / 2,
+                imagePaint);
+        // Combine background and text to a LayerDrawable
+        LayerDrawable layerDrawable = new LayerDrawable(
+                new Drawable[]{output,
+                        new BitmapDrawable(context.getResources(), canvasBitmap)}
+        );
+        Drawable myDrawable = new BitmapDrawable(context.getResources(), canvasBitmap);
+        */
+
+        Bitmap b = ((BitmapDrawable)backGd).getBitmap();
+        //layerDrawable.draw(new Canvas(b));
+        //backGd.draw(new Canvas(b));
 
         Bitmap bitmapResized = Bitmap.createScaledBitmap(b, 150, 150, false);
         this.setBackgroundDrawable(new BitmapDrawable(getResources(), bitmapResized));
@@ -62,9 +82,15 @@ public class ConnexusButton extends android.support.v7.widget.AppCompatButton im
             {
                 name = name.substring(0, len+1);
             }
-
-            asyncTask.delegate = this;
-            asyncTask.execute(json.get("cover_image").getAsString().replace("\"", ""));
+            if (json.get("cover_image").getAsString().replace("\"", "").length() > 0) {
+                asyncTask.delegate = this;
+                asyncTask.execute(json.get("cover_image").getAsString().replace("\"", ""));
+            }
+            int size = name.length();
+            if (size > 8) {
+                size = 8;
+            }
+            this.setText(name.substring(0,size));
         }
         else
         {
