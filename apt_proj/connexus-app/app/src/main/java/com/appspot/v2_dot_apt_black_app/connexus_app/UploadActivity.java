@@ -2,17 +2,27 @@ package com.appspot.v2_dot_apt_black_app.connexus_app;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.Toast;
 
+import java.io.File;
 import java.util.HashMap;
 
 public class UploadActivity extends AppCompatActivity implements View.OnClickListener {
     Context context = this;
+
+    private Bitmap myBitmap = null;
     private Intent userDataIntent;
+    private static final String TAG = "UploadActivity";
+
     private HashMap response = new HashMap();
     private EditText comment;
 
@@ -34,6 +44,13 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
                 break;
             case(UPLOAD_IMAGE):
                 // send POST to /post_media/<streamID>
+                if (resultCode == RESULT_OK) {
+                // get the captured image
+                Bundle b = data.getExtras();
+                File f = (File) b.getSerializable("pictureFile");
+                Log.v(TAG,"captured file: " + f.getAbsolutePath());
+                myBitmap = BitmapFactory.decodeFile(f.getAbsolutePath());
+                }
                 break;
         }
     }
@@ -51,6 +68,8 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
         findViewById(R.id.button_choose).setOnClickListener(this);
         findViewById(R.id.button_camera).setOnClickListener(this);
         findViewById(R.id.button_upload).setOnClickListener(this);
+
+
     }
 
     @Override
@@ -63,10 +82,13 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
                 startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE);
                 break;
             case R.id.button_camera:
-                Intent nearIntent = new Intent(context, CameraActivity.class);
-                startActivity(nearIntent);
+                Intent cameraIntent = new Intent(UploadActivity.this, CameraActivity.class);
+                startActivityForResult(cameraIntent, UPLOAD_IMAGE);
                 break;
             case R.id.button_upload:
+                if (myBitmap == null) {
+                    Toast.makeText(UploadActivity.this, "Please choose a picture.", Toast.LENGTH_SHORT).show();
+                }
                 response.put("uploadComment",comment.getText().toString());
                 // TODO: send POST to /post_media/<streamID>
                 break;
