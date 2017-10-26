@@ -86,11 +86,20 @@ public class ConnexusButton extends android.support.v7.widget.AppCompatButton im
                 asyncTask.delegate = this;
                 asyncTask.execute(json.get("cover_image").getAsString().replace("\"", ""));
             }
-            int size = name.length();
-            if (size > 8) {
-                size = 8;
+            if (json.get("distance") != null) {
+                String dist = json.get("distance").toString();
+                int size = dist.length();
+                if (size > 8) {
+                    size = 8;
+                }
+                this.setText(dist.substring(0,size));
+            } else {
+                int size = name.length();
+                if (size > 8) {
+                    size = 8;
+                }
+                this.setText(name.substring(0, size));
             }
-            this.setText(name.substring(0,size));
         }
         else
         {
