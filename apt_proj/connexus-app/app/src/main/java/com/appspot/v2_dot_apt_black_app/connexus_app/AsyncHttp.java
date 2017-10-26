@@ -8,7 +8,6 @@ package com.appspot.v2_dot_apt_black_app.connexus_app;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.GridLayout;
 import android.widget.Toast;
@@ -270,10 +269,59 @@ public class AsyncHttp  extends AppCompatActivity
     // [END showStreamPicture]
 
     // TODO: Implement Post image: Next on Brice, Anyone feel free to take though
-    // TODO: Implement Get nearby
+
+    
+    // [ START getNearby ]
+    private  void getNearbyHandler(byte[] response)
+    {
+        try
+        {
+            String s = new String(response);
+            JsonParser parser = new JsonParser();
+            JsonObject json = parser.parse(s).getAsJsonObject();
+            JsonArray streams = json.get("streams_by_distance").getAsJsonArray();
+            update16BoxGridLayout(streams);
+        }
+        catch(Exception e)
+        {
+            update16BoxGridLayout(null);
+        }
+    }
+
+    public void getNearbyStreams(Double lat,Double lon)
+    {
+
+        AsyncHttpResponseHandler respHandler = new  AsyncHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] response)
+            {
+                getNearbyHandler(response);
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e)
+            {
+                // called when response HTTP status is "4XX" (eg. 401, 403, 404)
+                Toast.makeText(context, "Server connection failed! " + statusCode, Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onRetry(int retryNo)
+            {
+                Toast.makeText(context, "Retry " + retryNo, Toast.LENGTH_SHORT).show();
+                if(retryNo == 2)
+                    return;
+            }
+        };
+        RequestParams req = new RequestParams();
+        req.put("lat", lat);
+        req.put("lon", lon);
+        get("/androidNearbyResults", req, respHandler);
+    }
+    // [END getNearby ]
 
 
-    // [ START Searc streams ]
+    // [ START Search streams ]
     private  void searchStreamsHandler(byte[] response)
     {
         try
