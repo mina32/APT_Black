@@ -35,7 +35,7 @@ public class ConnexusImageView extends android.support.v7.widget.AppCompatImageV
         }
 
         Bitmap b = ((BitmapDrawable)backGd).getBitmap();
-        Bitmap bitmapResized = Bitmap.createScaledBitmap(b, 150, 150, false);
+        Bitmap bitmapResized = Bitmap.createScaledBitmap(b, 250, 250, false);
         this.setBackgroundDrawable(new BitmapDrawable(getResources(), bitmapResized));
     }
 
