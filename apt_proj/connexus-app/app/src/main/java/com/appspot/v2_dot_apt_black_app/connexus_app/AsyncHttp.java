@@ -8,6 +8,7 @@ package com.appspot.v2_dot_apt_black_app.connexus_app;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.GridLayout;
 import android.widget.Toast;
@@ -271,7 +272,7 @@ public class AsyncHttp  extends AppCompatActivity
     // TODO: Implement Post image: Next on Brice, Anyone feel free to take though
     // TODO: Implement Get nearby
 
-    // TODO: Implement Search
+
     // [ START Searc streams ]
     private  void searchStreamsHandler(byte[] response)
     {
