@@ -13,6 +13,7 @@ import webapp2
 
 try:
     from pprint import pprint
+    from math import sin, cos, sqrt, atan2, radians
     from google.appengine.api import users
     from google.appengine.ext import ndb
     from google.appengine.ext.db import Key
@@ -191,6 +192,7 @@ class CreatePage(webapp2.RequestHandler):
         # Process tags
         raw_tags = self.request.get('tags')
         tags = raw_tags
+                
         s = Stream(
             stream_name=self.request.get('stream_name'),
             owner=owner,
@@ -420,7 +422,16 @@ class PostMedia(blobstore_handlers.BlobstoreUploadHandler):
             imageKey   = "{}-{}".format(stream_key_str, filename)
             imageUrl   = imageStore.store_file(imageKey, inputImage, content_type)
 
-            user_photo = Media(uploaded_by=current_user, content_url=imageUrl, comment = uploadComment)
+            # GeoView -- web view sets random points.
+            lat = - 60.4301233 + 89.4245046 * random.random()
+            lon = - 287.057815 + 185.035715 * random.random()
+
+            user_photo = Media(
+                    uploaded_by=current_user,
+                    content_url=imageUrl,
+                    comment = uploadComment,
+                    location=ndb.GeoPt(lat,lon),
+            )
 
             # Update stream
             stream_key = ndb.Key(urlsafe=stream_key_str)
@@ -615,6 +626,12 @@ class GeoView(webapp2.RequestHandler):
             createTime = str(media_item.date_uploaded)[:10] + 'T' + str(media_item.date_uploaded)[11:] + 'Z'
             lat = - 60.4301233 + 89.4245046 * random.random()
             lon = - 287.057815 + 185.035715 * random.random()
+            if ((media_item.location is not None) and 
+                (media_item.location.lat is not None) and
+                (media_item.location.lon is not None)
+            ):
+                lat = media_item.location.lat
+                lon = media_item.location.lon
             url = media_item.content_url
 
             media_map.append({
@@ -650,6 +667,12 @@ class GeoPoints(webapp2.RequestHandler):
             createTime = str(media_item.date_uploaded)[:10] + 'T' + str(media_item.date_uploaded)[11:] + 'Z'
             lat = - 60.4301233 + 89.4245046 * random.random()
             lon = - 287.057815 + 185.035715 * random.random()
+            if ((media_item.location is not None) and 
+                (media_item.location.lat is not None) and
+                (media_item.location.lon is not None)
+            ):
+                lat = media_item.location.lat
+                lon = media_item.location.lon
             url = media_item.content_url
 
             media_map.append({
@@ -769,6 +792,66 @@ class AppSearchResults(webapp2.RequestHandler):
         self.response.out.write(str(json.dumps(jsonResp)))
 # [END SearchResults]
 
+# [START AppNearbyResults]
+class AppNearbyResults(webapp2.RequestHandler):
+    def get_distance(self,stream_obj, lat1, lon1):
+        locations = []
+        if len(stream_obj.media_items):
+            for media_item in stream_obj.media_items:
+                if ((media_item.location is not None) and 
+                    (media_item.location.lat is not None) and
+                    (media_item.location.lon is not None)
+                ):
+                    locations.append(self.calc_distance(lat1,lon1,media_item.location.lat, media_item.location.lon))
+        if len(locations):
+            return sorted(locations)[0]
+    
+    def calc_distance(self,lat1,lon1,lat2,lon2):
+        # approximate radius of earth in km
+        R = 6373.0
+
+        lat1 = radians(float(lat1))
+        lon1 = radians(float(lon1))
+        lat2 = radians(float(lat2))
+        lon2 = radians(float(lon2))
+                
+        dlon = lon2 - lon1
+        dlat = lat2 - lat1
+        
+        a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
+        c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        
+        distance = R * c
+        return distance
+
+    def get(self):
+        current_user, auth_url, url_link_text, app_connection = check_auth(self.request)
+        lat = self.request.get('lat')
+        lon = self.request.get('lon')
+        
+        #try:
+        all_streams = Stream.query().fetch()
+        mapped = []
+        for s in all_streams:
+            item = {}
+            item["distance"] = self.get_distance(s, lat, lon)
+            item["owner"] = str(s.owner.email)
+            item["key_id"] = str(s.key.id())
+            item["key_url"] = str(s.key.urlsafe())
+            item["cover_image"] = str(s.cover_image)
+            item["stream_name"] = str(s.stream_name)
+            item["subscribers"] = map(lambda x : str(x.email), s.subscribers)
+            mapped.append(item)
+
+        sorted_streams = sorted(mapped, key=lambda s: (s["distance"] is None, s["distance"]), reverse=False)
+        jsonResp = {"streams_by_distance": sorted_streams}
+        #except:
+        #    pass
+
+        self.response.headers['Content-Type'] = 'application/json'
+        self.response.out.write(str(json.dumps(jsonResp)))
+# [END NearbyResults]
+
 # [START app]
 app = webapp2.WSGIApplication([
     ('/', ViewAllPage),
@@ -794,5 +877,6 @@ app = webapp2.WSGIApplication([
     ('/androidSubscribedStreams', AppRecentSubscribed),
     ('/androidViewImages', AppViewRecentImages),
     ('/androidSearchResults', AppSearchResults),
+    ('/androidNearbyResults', AppNearbyResults),
 ], debug=True)
 # [END app]
