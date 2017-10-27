@@ -37,7 +37,8 @@
             android:layout_alignRight="@+id/button_sign_in"
             android:layout_centerVertical="true"
             android:contentDescription="@string/desc_google_icon"
-            android:src="@drawable/googleg_color" />
+            android:src="@drawable/googleg_color"
+            android:layout_marginBottom="10dp"/>
 
         <TextView
             android:id="@+id/sign_in_status"
@@ -49,7 +50,8 @@
             android:textColor="@android:color/holo_red_light"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:visibility="gone" />
+            android:visibility="gone"
+            android:layout_marginBottom="10dp"/>
 
         <Button
             android:id="@+id/button_view_streams"
@@ -57,20 +59,24 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.37"
             android:text="VIEW STREAMS"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:background="@drawable/rounded_button"
+            android:theme="@style/ThemeOverlay.MyDarkButton"
+            android:layout_marginBottom="10dp"/>
 
         <TextView
             android:id="@+id/text_app_brief"
             android:layout_width="307dp"
             android:layout_height="wrap_content"
-            android:layout_weight="0.43"
+            android:layout_weight="0.18"
             android:fontFamily="monospace"
             android:lineSpacingExtra="10sp"
             android:text="The World's Greatest Photosharing App(TM) By APT Black Team"
             android:textAlignment="center"
             android:textColor="@android:color/background_light"
             android:textSize="24sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:layout_marginBottom="10dp"/>
 
         <Button
             android:id="@+id/button_sign_in"
@@ -83,7 +89,9 @@
             android:textSize="18sp"
             android:textStyle="bold"
             android:theme="@style/ThemeOverlay.MyDarkButton"
-            android:visibility="visible" />
+            android:visibility="visible"
+            android:background="@drawable/rounded_button"
+            android:layout_marginBottom="10dp"/>
 
         <Button
             android:id="@+id/button_sign_out"

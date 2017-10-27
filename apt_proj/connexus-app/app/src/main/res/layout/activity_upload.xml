@@ -6,7 +6,23 @@
     android:layout_height="match_parent"
     android:background="@color/blue_grey_700"
     tools:context="com.appspot.v2_dot_apt_black_app.connexus_app.UploadActivity">
-
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="351dp"
+        android:layout_height="44dp"
+        android:layout_weight="0.06"
+        android:gravity="center"
+        android:text="@string/title_text"
+        android:textColor="@android:color/holo_orange_light"
+        android:textSize="40sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintHorizontal_bias="0.515"
+        android:layout_marginRight="8dp" />
     <Button
         android:id="@+id/button_choose"
         android:layout_width="297dp"
@@ -16,11 +32,16 @@
         android:layout_marginRight="8dp"
         android:text="Choose from your library"
         app:layout_constraintBottom_toTopOf="@+id/button_camera"
-        app:layout_constraintHorizontal_bias="0.183"
+        app:layout_constraintHorizontal_bias="0.112"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp" />
+        android:layout_marginEnd="8dp"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp"
+        app:layout_constraintVertical_bias="1.0"
+        android:background="@drawable/rounded_button"
+        android:theme="@style/ThemeOverlay.MyDarkButton"/>
     <Button
         android:layout_width="139dp"
         android:layout_height="48dp"
@@ -34,7 +55,12 @@
         app:layout_constraintRight_toRightOf="parent"
         android:id="@+id/button_camera"
         android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp" />
+        android:layout_marginEnd="8dp"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp"
+        app:layout_constraintVertical_bias="0.993"
+        android:background="@drawable/rounded_button"
+        android:theme="@style/ThemeOverlay.MyDarkButton"/>
 
     <EditText
         android:id="@+id/text_comment"
@@ -53,7 +79,8 @@
         tools:layout_constraintTop_creator="1"
         tools:layout_constraintBottom_creator="1"
         android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp" />
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp" />
 
     <Button
         android:layout_width="137dp"
@@ -66,36 +93,41 @@
         app:layout_constraintTop_toBottomOf="@+id/text_comment"
         tools:layout_constraintLeft_creator="1"
         app:layout_constraintLeft_toLeftOf="@+id/text_stream"
-        android:layout_marginLeft="19dp" />
+        android:layout_marginLeft="19dp"
+        android:background="@drawable/rounded_button"
+        android:theme="@style/ThemeOverlay.MyDarkButton"/>
 
     <TextView
         android:id="@+id/text_stream"
         android:layout_width="60dp"
         android:layout_height="26dp"
         android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
         android:text="Stream:"
         android:textAlignment="viewStart"
         android:textAllCaps="true"
-        android:textColor="@android:color/white"
+        android:textColor="?android:attr/colorPressedHighlight"
         android:textStyle="bold"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginStart="8dp"
         app:layout_constraintBaseline_toBaselineOf="@+id/text_streamview"
+        app:layout_constraintLeft_toLeftOf="parent"
         tools:layout_constraintBaseline_creator="1" />
 
     <TextView
         android:id="@+id/text_streamview"
         android:layout_width="0dp"
         android:layout_height="27dp"
+        android:layout_marginEnd="8dp"
         android:layout_marginLeft="5dp"
         android:layout_marginRight="8dp"
-        android:layout_marginTop="17dp"
-        app:layout_constraintHorizontal_bias="1.0"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="9dp"
+        android:textAllCaps="true"
+        android:textColor="@android:color/holo_orange_light"
+        android:textStyle="bold"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toRightOf="@+id/text_stream"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button_upload"
-        tools:layout_constraintRight_creator="1"
-        android:layout_marginStart="5dp"
-        android:layout_marginEnd="8dp"
-        tools:layout_constraintLeft_creator="1" />
+        tools:layout_constraintLeft_creator="1"
+        tools:layout_constraintRight_creator="1" />
 </android.support.constraint.ConstraintLayout>

@@ -2,12 +2,16 @@ package com.appspot.v2_dot_apt_black_app.connexus_app;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.text.style.BackgroundColorSpan;
 import android.view.View;
 import android.widget.LinearLayout;
 
+import com.google.android.gms.common.SignInButton;
 import com.google.gson.JsonObject;
 
 /**
@@ -63,7 +67,7 @@ public class ConnexusButton extends android.support.v7.widget.AppCompatButton im
         //layerDrawable.draw(new Canvas(b));
         //backGd.draw(new Canvas(b));
 
-        Bitmap bitmapResized = Bitmap.createScaledBitmap(b, 150, 150, false);
+        Bitmap bitmapResized = Bitmap.createScaledBitmap(b, 225, 225, false);
         this.setBackgroundDrawable(new BitmapDrawable(getResources(), bitmapResized));
     }
 
@@ -99,12 +103,13 @@ public class ConnexusButton extends android.support.v7.widget.AppCompatButton im
                     size = 8;
                 }
                 this.setText(name.substring(0, size));
+                this.setTextColor(Color.WHITE);
+                this.setBackgroundColor(Color.TRANSPARENT);
             }
         }
         else
         {
-            this.setText("Empty");
-            this.setTextSize(8);
+            this.setBackgroundColor(Color.TRANSPARENT);
             setClickable(false);
             return;
         }
