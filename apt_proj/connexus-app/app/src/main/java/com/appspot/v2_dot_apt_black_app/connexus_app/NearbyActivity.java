@@ -25,6 +25,7 @@ public class NearbyActivity extends AppCompatActivity implements View.OnClickLis
     Location mLastLocation;
     String mLatitudeText;
     String mLongitudeText;
+    AsyncHttp nav;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +39,9 @@ public class NearbyActivity extends AppCompatActivity implements View.OnClickLis
                     .addApi(LocationServices.API)
                     .build();
         }
-
+        nav = new AsyncHttp(context, findViewById(R.id.nearby_streams_grid), userDataIntent);
         findViewById(R.id.button_view_streams).setOnClickListener(this);
+        findViewById(R.id.button_more2).setOnClickListener(this);
     }
     @Override
     public void onConnected(Bundle connectionHint) {
@@ -56,8 +58,8 @@ public class NearbyActivity extends AppCompatActivity implements View.OnClickLis
             mLatitudeText = String.valueOf(mLastLocation.getLatitude());
             mLongitudeText = String.valueOf(mLastLocation.getLongitude());
         }
-        AsyncHttp nav = new AsyncHttp(context, findViewById(R.id.nearby_streams_grid), userDataIntent);
-        nav.getNearbyStreams(mLatitudeText, mLongitudeText);
+        //nav.getNearbyStreams(mLatitudeText, mLongitudeText);
+        nav.getNearbyStreams("30.1378", "-97.5512");
     }
 
     @Override
@@ -85,7 +87,7 @@ public class NearbyActivity extends AppCompatActivity implements View.OnClickLis
                 startActivity(userDataIntent);
                 break;
             case R.id.button_more2:
-                //TODO: same layout, different images
+                nav.showMoreStreams();
                 break;
 
         }

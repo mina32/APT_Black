@@ -32,6 +32,8 @@ public class AsyncHttp  extends AppCompatActivity
     private Intent userDataIntent;
     private AsyncHttpClient client;
     private boolean userIsSignedIn;
+    private JsonArray moreImages;
+    private int imageIndex = 0;
 
     public AsyncHttp(Context context, View view, Intent userDataIntent)
     {
@@ -229,6 +231,8 @@ public class AsyncHttp  extends AppCompatActivity
             JsonParser parser = new JsonParser();
             JsonObject json = parser.parse(s).getAsJsonObject();
             JsonArray images = json.get("media_items").getAsJsonArray();
+            moreImages = images;
+            imageIndex = imageIndex + 12;
             update16BoxGridView(images);
         }
         catch(Exception e)
@@ -236,7 +240,15 @@ public class AsyncHttp  extends AppCompatActivity
             update16BoxGridView(null);
         }
     }
-
+    public void showMorePictures() {
+        JsonArray subsetImages = new JsonArray();
+        int myIndex;
+        for (int i=0; i<12; i++) {
+            myIndex = (imageIndex + i) % moreImages.size();
+            subsetImages.add(moreImages.get(myIndex));
+        }
+        update16BoxGridView(subsetImages);
+    }
     public void showStreamPicture()
     {
         AsyncHttpResponseHandler respHandler = new  AsyncHttpResponseHandler()

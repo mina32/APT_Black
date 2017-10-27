@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 public class SingleStreamActivity extends AppCompatActivity implements View.OnClickListener {
     private Intent intent;
+    AsyncHttp navigator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,9 +25,8 @@ public class SingleStreamActivity extends AppCompatActivity implements View.OnCl
         Toast.makeText(this, "Single View create", Toast.LENGTH_SHORT).show();
         TextView streamName = (TextView) findViewById(R.id.stream_name);
         streamName.setText("Stream name: " + intent.getStringExtra("stream_name"));
+        navigator = new AsyncHttp(this, findViewById(R.id.view_single_grid), intent);
 
-        // TODO: Pull images from the back end and display
-        AsyncHttp navigator = new AsyncHttp(this, findViewById(R.id.view_single_grid), intent);
         navigator.showStreamPicture();
     }
 
@@ -34,7 +34,7 @@ public class SingleStreamActivity extends AppCompatActivity implements View.OnCl
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.button_more:
-                // TODO: Implement more views
+                navigator.showMorePictures();
                 break;
             case R.id.button_upload:
                 intent.setClass(this, UploadActivity.class);
