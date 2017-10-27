@@ -8,6 +8,7 @@ package com.appspot.v2_dot_apt_black_app.connexus_app;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.GridLayout;
 import android.widget.Toast;
@@ -288,9 +289,9 @@ public class AsyncHttp  extends AppCompatActivity
         }
     }
 
-    public void getNearbyStreams(Double lat,Double lon)
+    public void getNearbyStreams(String lat, String lon)
     {
-
+        Log.i("=======>", "Getting Nearby!!!");
         AsyncHttpResponseHandler respHandler = new  AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] response)
