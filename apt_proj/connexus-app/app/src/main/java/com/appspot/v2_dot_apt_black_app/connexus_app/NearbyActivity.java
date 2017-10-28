@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -26,6 +27,7 @@ public class NearbyActivity extends AppCompatActivity implements View.OnClickLis
     String mLatitudeText;
     String mLongitudeText;
     AsyncHttp nav;
+    private static final String TAG = "NearbyActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,20 +48,25 @@ public class NearbyActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onConnected(Bundle connectionHint) {
         if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Log.i("=====>", "Permission ERR");
+            Log.v(TAG,"Permission ERR");
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     MY_PERMISSIONS_REQUEST_LOCATION);
             //return;
         }
-        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
-                mGoogleApiClient);
-        if (mLastLocation != null) {
+        // This is the first time calling the getLastLocation. That might not be
+        // enough time for the first location to come in. So put in a loop.
+        while (mLastLocation == null) {
+            mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+                    mGoogleApiClient);
+        }
+         if (mLastLocation != null) {
             mLatitudeText = String.valueOf(mLastLocation.getLatitude());
             mLongitudeText = String.valueOf(mLastLocation.getLongitude());
         }
-        //nav.getNearbyStreams(mLatitudeText, mLongitudeText);
-        nav.getNearbyStreams("30.1378", "-97.5512");
+        Log.v(TAG,"Latitude:: " + mLatitudeText);
+        nav.getNearbyStreams(mLatitudeText, mLongitudeText);
+       // nav.getNearbyStreams("28.2", "-65.5512");
     }
 
     @Override
@@ -87,10 +94,11 @@ public class NearbyActivity extends AppCompatActivity implements View.OnClickLis
                 startActivity(userDataIntent);
                 break;
             case R.id.button_more2:
-                nav.showMoreStreams();
+                nav.showMorePictures();
                 break;
 
         }
 
     }
+
 }
