@@ -2,9 +2,12 @@ package com.appspot.v2_dot_apt_black_app.connexus_app;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.SearchView;
+
+import static com.appspot.v2_dot_apt_black_app.connexus_app.R.id.search_all;
 
 
 public class AllStreamActivity extends AppCompatActivity implements View.OnClickListener
@@ -57,7 +60,10 @@ public class AllStreamActivity extends AppCompatActivity implements View.OnClick
     {
         switch (view.getId()) {
             case R.id.search_button:
+                SearchView searchWidget = (SearchView) findViewById(search_all);
+                String searchText = searchWidget.getQuery().toString();
                 userDataIntent.setClass(context, SearchActivity.class);
+                userDataIntent.putExtra("QUERY", searchText);
                 startActivity(userDataIntent);
                 break;
             case R.id.button_nearby:

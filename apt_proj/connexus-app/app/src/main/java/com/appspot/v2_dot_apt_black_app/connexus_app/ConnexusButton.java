@@ -2,16 +2,13 @@ package com.appspot.v2_dot_apt_black_app.connexus_app;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.text.style.BackgroundColorSpan;
 import android.view.View;
 import android.widget.LinearLayout;
 
-import com.google.android.gms.common.SignInButton;
 import com.google.gson.JsonObject;
 
 /**
@@ -90,7 +87,7 @@ public class ConnexusButton extends android.support.v7.widget.AppCompatButton im
                 asyncTask.delegate = this;
                 asyncTask.execute(json.get("cover_image").getAsString().replace("\"", ""));
             }
-            if (json.get("distance") != null) {
+            if (json.get("distance") != null && !json.get("distance").toString().equals("null")) {
                 String dist = json.get("distance").toString();
                 int size = dist.length();
                 if (size > 8) {
@@ -103,9 +100,9 @@ public class ConnexusButton extends android.support.v7.widget.AppCompatButton im
                     size = 8;
                 }
                 this.setText(name.substring(0, size));
-                this.setTextColor(Color.WHITE);
-                this.setBackgroundColor(Color.TRANSPARENT);
             }
+            this.setTextColor(Color.WHITE);
+            this.setBackgroundColor(Color.TRANSPARENT);
         }
         else
         {

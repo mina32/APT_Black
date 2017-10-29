@@ -38,7 +38,6 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data)
     {
-        //TODO: Is this the right idea?
         switch(requestCode) {
             case(PICK_IMAGE):
                 Uri pickedImage = data.getData();

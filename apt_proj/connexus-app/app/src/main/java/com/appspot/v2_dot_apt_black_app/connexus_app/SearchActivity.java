@@ -25,8 +25,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
     public void  onStart()
     {
         super.onStart();
-        SearchView searchWidget = (SearchView) findViewById(search);
-        String searchText = searchWidget.getQuery().toString();
+        String searchText = getIntent().getStringExtra("QUERY");
         AsyncHttp nav = new AsyncHttp(context, findViewById(R.id.search_streams_grid), userDataIntent);
         nav.getSearchStreams(searchText);
     }

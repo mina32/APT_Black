@@ -59,7 +59,6 @@ public class ConnexusImageView extends android.support.v7.widget.AppCompatImageV
             this.setBackgroundColor(Color.DKGRAY);
         }
 
-        // TODO: Find way to expand a view on click
     }
 
 }

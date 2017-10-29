@@ -5,13 +5,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
-
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -56,17 +56,22 @@ public class NearbyActivity extends AppCompatActivity implements View.OnClickLis
         }
         // This is the first time calling the getLastLocation. That might not be
         // enough time for the first location to come in. So put in a loop.
-        while (mLastLocation == null) {
+        int count = 0;
+        while (mLastLocation == null && count < 500) {
             mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
                     mGoogleApiClient);
+            count++;
         }
          if (mLastLocation != null) {
             mLatitudeText = String.valueOf(mLastLocation.getLatitude());
             mLongitudeText = String.valueOf(mLastLocation.getLongitude());
-        }
+        } else if (count == 500) {
+             Toast.makeText(NearbyActivity.this, "Location not available, using default location.", Toast.LENGTH_SHORT).show();
+             mLatitudeText = "30.2890";
+             mLongitudeText = "-97.7355";
+         }
         Log.v(TAG,"Latitude:: " + mLatitudeText);
         nav.getNearbyStreams(mLatitudeText, mLongitudeText);
-       // nav.getNearbyStreams("28.2", "-65.5512");
     }
 
     @Override
