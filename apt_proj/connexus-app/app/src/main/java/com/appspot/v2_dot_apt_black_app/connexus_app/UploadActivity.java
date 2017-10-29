@@ -12,10 +12,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
 import java.util.HashMap;
+
+import static com.appspot.v2_dot_apt_black_app.connexus_app.R.id.text_streamview;
 
 public class UploadActivity extends AppCompatActivity implements View.OnClickListener {
     Context context = this;
@@ -68,6 +71,9 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
         setContentView(R.layout.activity_upload);
         //response.put(uploadImage);
         comment = (EditText)findViewById(R.id.text_comment);
+        TextView streamName = (TextView) findViewById(text_streamview);
+        userDataIntent = getIntent();
+        streamName.setText(userDataIntent.getStringExtra("stream_name"));
 
         userDataIntent = getIntent();
         findViewById(R.id.button_choose).setOnClickListener(this);
