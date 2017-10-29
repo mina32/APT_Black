@@ -4,13 +4,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.IdRes;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -40,23 +41,28 @@ public class UploadActivity extends AppCompatActivity implements View.OnClickLis
         //TODO: Is this the right idea?
         switch(requestCode) {
             case(PICK_IMAGE):
-                response.put("uploadImage", data);
+                Uri pickedImage = data.getData();
+                try {
+                    myBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), pickedImage);
+                    response.put("imageFile", myBitmap);
+                } catch (Exception e) {
+                    Log.i("ERR:", e.toString());
+                }
                 break;
             case(UPLOAD_IMAGE):
                 // send POST to /post_media/<streamID>
                 if (resultCode == RESULT_OK) {
-                // get the captured image
-                Bundle b = data.getExtras();
-                File f = (File) b.getSerializable("pictureFile");
-                Log.v(TAG,"captured file: " + f.getAbsolutePath());
-                myBitmap = BitmapFactory.decodeFile(f.getAbsolutePath());
+                    // get the captured image
+                    Bundle b = data.getExtras();
+                    File f = (File) b.getSerializable("pictureFile");
+                    Log.v(TAG,"captured file: " + f.getAbsolutePath());
+                    myBitmap = BitmapFactory.decodeFile(f.getAbsolutePath());
+                    response.put("imageFile", myBitmap);
                 }
                 break;
         }
     }
 
-
-    // TODO:
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

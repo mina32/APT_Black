@@ -380,5 +380,5 @@ public class AsyncHttp  extends AppCompatActivity
         get("/androidSearchResults", req, respHandler);
     }
     // [END Search streams ]
-    // TODO: Use getMostSubscribedStreams to solve the right above two TODOS.
+
 }
